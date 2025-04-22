@@ -4,7 +4,7 @@ const cors = require('cors');
 const userRoutes = require('./routes/UserRoutes');
 const condominioRoutes = require('./routes/CondominioRoutes');
 const UsuarioCondominioRoutes = require('./routes/UsuarioCondominioRoutes');
-const AvisoRoutes = require('../routes/AvisoRoutes');
+const AvisoRoutes = require('./routes/AvisoRoutes');
 
 const app = express();
 app.use(cors());

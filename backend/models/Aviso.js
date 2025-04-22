@@ -1,10 +1,10 @@
 class Aviso{
-    constructor(id, titulo, mensagem, autor, data, condominioId){
+    constructor(id, titulo, mensagem, autor, date, condominioId){
         this.id = id;
         this.titulo = titulo;
         this.mensagem = mensagem;
         this.autor = autor;
-        this.data = data;
+        this.date = date;
         this.condominioId = condominioId;
     }
 }
