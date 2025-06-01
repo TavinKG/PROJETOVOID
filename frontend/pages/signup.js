@@ -1,8 +1,9 @@
 import { useRouter } from 'next/router';
 import { useState } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import Head from 'next/head'; // Importar Head para SEO e título da página
-import Link from 'next/link'; // Importar Link do Next.js para navegação otimizada
+import Head from 'next/head';
+import Link from 'next/link';
+import { IMaskInput } from 'react-imask';
 
 export default function Signup() {
   const [tipoUsuario, setTipoUsuario] = useState('Morador');
@@ -10,7 +11,7 @@ export default function Signup() {
     nome: '',
     email: '',
     senha: '',
-    cpf: '',
+    cpf: '', 
     dataNascimento: '',
     telefone: ''
   });
@@ -28,19 +29,29 @@ export default function Signup() {
     setLoading(true);
     setError(null);
 
-    try {
-      // Basic client-side validation for CPF and phone format
-      if (formData.cpf.length !== 11 || !/^\d+$/.test(formData.cpf)) {
-        setError('CPF deve conter 11 dígitos numéricos.');
+    // Validações aprimoradas no frontend, usando os valores LIMPOS
+    if (formData.cpf.length !== 11) {
+      setError('CPF inválido. Deve conter 11 dígitos.');
+      setLoading(false);
+      return;
+    }
+    if (formData.telefone.length < 10 || formData.telefone.length > 11) {
+      setError('Telefone inválido. Deve conter 10 ou 11 dígitos (DDD + número).');
+      setLoading(false);
+      return;
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+        setError('Formato de e-mail inválido.');
         setLoading(false);
         return;
-      }
-      if (!/^\d{10,11}$/.test(formData.telefone)) {
-        setError('Telefone deve conter 10 ou 11 dígitos numéricos.');
+    }
+    if (formData.senha.length < 6) {
+        setError('A senha deve ter no mínimo 6 caracteres.');
         setLoading(false);
         return;
-      }
+    }
 
+    try {
       const res = await fetch('http://localhost:5000/api/users/register', {
         method: 'POST',
         headers: {
@@ -58,11 +69,27 @@ export default function Signup() {
         console.log('Usuário cadastrado com sucesso:', data);
         router.push('/login');
       } else {
-        // Assume data.message for more specific errors from backend
-        setError(data.message || data.error || 'Erro ao registrar usuário');
+        // --- INÍCIO DA CORREÇÃO ---
+        let errorMessage = 'Erro ao registrar usuário. Tente novamente.'; // Mensagem genérica padrão
+        if (data.error && typeof data.error === 'string') {
+          // Verifica se o erro do backend é uma string e tenta mapear
+          if (data.error.includes('duplicate key value violates unique constraint "usuario_cpf_key"')) {
+            errorMessage = 'Este CPF já está cadastrado. Por favor, utilize outro ou faça login.';
+          } else if (data.error.includes('duplicate key value violates unique constraint "usuario_email_key"')) { // Adicionei para o caso de e-mail
+            errorMessage = 'Este e-mail já está cadastrado. Por favor, utilize outro ou faça login.';
+          } else {
+            // Se for outro erro do backend que não mapeamos, exibe a mensagem original ou uma mais geral
+            errorMessage = data.error; 
+          }
+        } else if (data.message) {
+            // Se o backend enviar uma mensagem mais amigável via 'message'
+            errorMessage = data.message;
+        }
+        setError(errorMessage);
+        // --- FIM DA CORREÇÃO ---
       }
     } catch (err) {
-      setError('Erro na comunicação com o servidor. Tente novamente mais tarde.');
+      setError('Erro na comunicação com o servidor. Verifique sua conexão.'); // Mensagem mais específica para erro de rede
       console.error('Signup error:', err);
     } finally {
       setLoading(false);
@@ -74,17 +101,16 @@ export default function Signup() {
       <Head>
         <title>Cadastro - PROJETO VOID</title>
       </Head>
-      <div className="d-flex flex-column align-items-center justify-content-center min-vh-100 bg-light"> {/* Added min-vh-100 and bg-light */}
+      <div className="d-flex flex-column align-items-center justify-content-center min-vh-100 bg-light">
         <div className="card shadow p-4 w-100" style={{ maxWidth: '600px' }}>
           <div className="text-center mb-4">
-            {/* Ajuste do padding e margem da logo para melhor espaçamento */}
             <img src="/logos/logo-header1.png" alt="VOID Logo" className="mb-4" style={{ height: '80px' }} />
-            <h2 className="mb-0">Cadastro</h2> {/* Reduzi a margem inferior do h2 */}
+            <h2 className="mb-0">Cadastro</h2>
           </div>
 
-          <div className="mb-4"> {/* Reduzi a margem inferior para mais compactação */}
-            <label className="form-label d-block text-center fw-bold">Tipo de Usuário</label> {/* Centralizei e destaquei */}
-            <div className="d-flex justify-content-center gap-4 mt-2"> {/* Centralizei os radio buttons */}
+          <div className="mb-4">
+            <label className="form-label d-block text-center fw-bold">Tipo de Usuário</label>
+            <div className="d-flex justify-content-center gap-4 mt-2">
               <div className="form-check">
                 <input
                   type="radio"
@@ -140,27 +166,37 @@ export default function Signup() {
             <div className="row">
               <div className="col-md-6 mb-3">
                 <label htmlFor="telefone" className="form-label">Telefone</label>
-                <input
-                  type="text"
+                <IMaskInput
+                  mask="(00) 00000-0000"
+                  definitions={{
+                    '0': /[0-9]/,
+                  }}
                   id="telefone"
                   name="telefone"
                   className="form-control"
-                  value={formData.telefone}
-                  onChange={handleInputChange}
-                  placeholder="(XX) XXXXX-XXXX" // Adicionado placeholder para formato
+                  value={formData.telefone} 
+                  onAccept={(value, mask) => {
+                    setFormData(prevData => ({ ...prevData, telefone: mask.unmaskedValue }));
+                  }} 
+                  placeholder="(XX) XXXXX-XXXX"
                   required
                 />
               </div>
               <div className="col-md-6 mb-3">
                 <label htmlFor="cpf" className="form-label">CPF</label>
-                <input
-                  type="text"
+                <IMaskInput
+                  mask="000.000.000-00"
+                  definitions={{
+                    '0': /[0-9]/,
+                  }}
                   id="cpf"
                   name="cpf"
                   className="form-control"
-                  value={formData.cpf}
-                  onChange={handleInputChange}
-                  placeholder="XXX.XXX.XXX-XX" // Adicionado placeholder para formato
+                  value={formData.cpf} 
+                  onAccept={(value, mask) => {
+                    setFormData(prevData => ({ ...prevData, cpf: mask.unmaskedValue }));
+                  }} 
+                  placeholder="XXX.XXX.XXX-XX"
                   required
                 />
               </div>
@@ -193,14 +229,13 @@ export default function Signup() {
             </div>
             <button
               type="submit"
-              className="btn btn-dark w-100 py-2 mt-3" // Adicionado py-2 e mt-3 para melhor espaçamento e altura
+              className="btn btn-dark w-100 py-2 mt-3"
               disabled={loading}
             >
-              {loading ? 'CADASTRANDO...' : 'CADASTRAR'} {/* Alterei o texto para 'Cadastrando...' */}
+              {loading ? 'CADASTRANDO...' : 'CADASTRAR'}
             </button>
-            {error && <p className="text-danger text-center mt-3">{error}</p>} {/* Centralizei o erro */}
+            {error && <p className="text-danger text-center mt-3">{error}</p>}
 
-            {/* Novo elemento: Link para a página de Login */}
             <p className="text-center mt-3 mb-0">
               Já tem uma conta?{' '}
               <Link href="/login" className="text-decoration-none">

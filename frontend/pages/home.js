@@ -1,28 +1,59 @@
 import 'bootstrap/dist/css/bootstrap.min.css';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import Cookies from 'js-cookie';
 import { useRouter } from 'next/router';
 import LogoutButton from '../components/LogoutButton';
+import Head from 'next/head';
+import Link from 'next/link';
 
 export default function Home() {
   const router = useRouter();
   const tipoUsuario = Cookies.get('tipoUsuario');
   const userId = Cookies.get('userId');
-  const [mensagem, setMensagem] = useState('');
-  const [showModal, setShowModal] = useState(false);
-  const [showIngressoModal, setShowIngressoModal] = useState(false);
+  
+  const [welcomeMessage, setWelcomeMessage] = useState(null); 
+  
+  const [showModal, setShowModal] = useState(false); // Modal de criação de condomínio
+  const [showIngressoModal, setShowIngressoModal] = useState(false); // Modal de ingresso em condomínio
+  
   const [areasComuns, setAreasComuns] = useState([]);
   const [quantidadeAreas, setQuantidadeAreas] = useState(0);
+  
   const [cnpjSearch, setCnpjSearch] = useState('');
   const [condominioEncontrado, setCondominioEncontrado] = useState(null);
   const [condominiosUsuario, setCondominiosUsuario] = useState([]);
+
+  const fetchCondominiosUsuario = useCallback(async () => {
+    if (!userId) return;
+    try {
+      const response = await fetch(`http://localhost:5000/api/usuariocondominio/${userId}/ativos`);
+      if (response.ok) {
+        const data = await response.json();
+        setCondominiosUsuario(data.data);
+      } else {
+        console.error('Erro ao buscar condomínios do usuário:', response.statusText);
+        setCondominiosUsuario([]);
+      }
+    } catch (error) {
+      console.error('Erro ao buscar dados dos condomínios:', error);
+      setCondominiosUsuario([]);
+    }
+  }, [userId]);
 
   useEffect(() => {
     if (!tipoUsuario || !userId) {
       router.push('/login');
     } else {
-      if (tipoUsuario === 'Morador') {
-        setMensagem(
+      fetchCondominiosUsuario();
+    }
+  }, [tipoUsuario, userId, router, fetchCondominiosUsuario]);
+
+  // Modificação principal neste useEffect
+  useEffect(() => {
+    if (tipoUsuario === 'Morador') {
+      if (condominiosUsuario.length === 0) {
+        // Mensagem para morador sem condomínios
+        setWelcomeMessage(
           <>
             Você ainda não está em nenhum condomínio. Por favor,{' '}
             <a href="#" onClick={(e) => { e.preventDefault(); setShowIngressoModal(true); }}>
@@ -30,39 +61,33 @@ export default function Home() {
             </a>.
           </>
         );
-      } else if (tipoUsuario === 'Administrador') {
-        setMensagem(
+      } else {
+        // Mensagem para morador com condomínios (mantém a opção de entrar em outro)
+        setWelcomeMessage(
           <>
-            Você pode{' '}
+            Gerencie suas atividades e informações nos condomínios vinculados ou{' '}
             <a href="#" onClick={(e) => { e.preventDefault(); setShowIngressoModal(true); }}>
-              entrar em um condomínio existente
-            </a>{' '}
-            ou{' '}
-            <a href="#" onClick={(e) => { e.preventDefault(); setShowModal(true); }}>
-              criar o perfil para um novo condomínio
+              entre em outro condomínio
             </a>.
           </>
         );
       }
-
-      fetchCondominiosUsuario();
+    } else if (tipoUsuario === 'Administrador') {
+      // Mensagem para Administrador
+      setWelcomeMessage(
+        <>
+          Você pode{' '}
+          <a href="#" onClick={(e) => { e.preventDefault(); setShowIngressoModal(true); }}>
+            entrar em um condomínio existente
+          </a>{' '}
+          ou{' '}
+          <a href="#" onClick={(e) => { e.preventDefault(); setShowModal(true); }}>
+            criar o perfil para um novo condomínio
+          </a>.
+        </>
+      );
     }
-  }, [tipoUsuario, userId, router]);
-
-  const fetchCondominiosUsuario = async () => {
-    try {
-      const response = await fetch(`http://localhost:5000/api/usuariocondominio/${userId}/ativos`);
-      if (response.ok) {
-        const data = await response.json();
-        console.log(data.data);
-        setCondominiosUsuario(data.data);
-      } else {
-        console.error('Erro ao buscar condomínios do usuário');
-      }
-    } catch (error) {
-      console.error('Erro ao buscar dados dos condomínios:', error);
-    }
-  };
+  }, [tipoUsuario, condominiosUsuario]);
 
   const handleSearchCondominio = async () => {
     try {
@@ -72,10 +97,12 @@ export default function Home() {
         setCondominioEncontrado(data);
         alert('Condomínio encontrado com sucesso!');
       } else {
+        setCondominioEncontrado(null);
         alert('Condomínio não encontrado. Verifique o CNPJ.');
       }
     } catch (error) {
       console.error('Erro ao buscar condomínio:', error);
+      setCondominioEncontrado(null);
       alert('Erro ao buscar condomínio.');
     }
   };
@@ -88,7 +115,7 @@ export default function Home() {
       }
   
       const usuarioCondominioData = {
-        status: 0, // Status de ativo
+        status: 0, // Status 0 para pendente/aguardando aprovação
         usuarioId: userId,
         condominioId: condominioEncontrado.id,
       };
@@ -100,12 +127,13 @@ export default function Home() {
       });
   
       if (response.ok) {
-        alert('Pedido de ingresso no condomínio realizado com sucesso!');
+        alert('Pedido de ingresso no condomínio realizado com sucesso! Aguarde a aprovação do administrador.');
         setShowIngressoModal(false);
-        fetchCondominiosUsuario(); // Atualiza os condomínios vinculados
+        setCnpjSearch('');
+        setCondominioEncontrado(null);
       } else {
         const errorData = await response.json();
-        alert(`Erro ao ingressar no condomínio: ${errorData.message}`);
+        alert(`Erro ao ingressar no condomínio: ${errorData.message || 'Erro desconhecido'}`);
       }
     } catch (error) {
       console.error('Erro ao ingressar no condomínio:', error);
@@ -113,7 +141,6 @@ export default function Home() {
     }
   };
   
-
   const handleQuantidadeAreasChange = (e) => {
     const quantidade = parseInt(e.target.value, 10) || 0;
     setQuantidadeAreas(quantidade);
@@ -157,7 +184,7 @@ export default function Home() {
         const condominioId = condominioCriado.id;
 
         const usuarioCondominioData = {
-          status: 1,
+          status: 1, // Status de ativo para Administrador que cria o condomínio
           usuarioId: userId,
           condominioId: condominioId,
         };
@@ -171,13 +198,14 @@ export default function Home() {
         if (vinculoResponse.ok) {
           alert('Condomínio criado e vínculo estabelecido com sucesso!');
           setShowModal(false);
+          fetchCondominiosUsuario(); // Atualiza a lista de condomínios do usuário após a criação
         } else {
           const vinculoError = await vinculoResponse.json();
-          alert(`Erro ao criar vínculo: ${vinculoError.message}`);
+          alert(`Erro ao criar vínculo: ${vinculoError.message || 'Erro desconhecido'}`);
         }
       } else {
         const errorData = await response.json();
-        alert(`Erro ao criar condomínio: ${errorData.message}`);
+        alert(`Erro ao criar condomínio: ${errorData.message || 'Erro desconhecido'}`);
       }
     } catch (error) {
       console.error('Erro ao enviar dados:', error);
@@ -186,141 +214,152 @@ export default function Home() {
   };
 
   return (
-    <div className="container mt-5">
-      <h1>Bem-vindo à Home!</h1>
-      <p>{mensagem}</p>
+    <>
+      <Head>
+        <title>Home - PROJETO VOID</title>
+      </Head>
+      <div className="container mt-5">
+        <h1 className="mb-4">Bem-vindo à Home!</h1>
+        {welcomeMessage && <p className="lead">{welcomeMessage}</p>}
 
-      {/* Exibição dos condomínios relacionados ao usuário */}
-      {condominiosUsuario.length > 0 ? (
-        <div className="mt-4">
-          <h2>Seus Condomínios</h2>
-          {condominiosUsuario.map(condominio => (
-            <a key={condominio.id} href={`condo?id=${condominio.id}`} className="text-decoration-none">
-              <div className="card mb-3">
-                <div className="card-body">
-                  <h5 className="card-title">{condominio.nome}</h5>
-                  <p className="card-text"><strong>CNPJ:</strong> {condominio.cnpj}</p>
-                  <p className="card-text"><strong>Endereço:</strong> {condominio.endereco}</p>
-                </div>
-              </div>
-            </a>
-          ))}
-        </div>
-      ) : (
-        <p>Você ainda não está vinculado a nenhum condomínio com status ativo.</p>
-      )}
-
-      <LogoutButton />
-
-      {/* Modal para ingresso no condomínio */}
-      {showIngressoModal && (
-        <div className="modal fade show d-block" tabIndex="-1" role="dialog" aria-labelledby="modalIngressoCondominio" aria-hidden="true" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
-          <div className="modal-dialog" role="document">
-            <div className="modal-content">
-              <div className="modal-header">
-                <h5 className="modal-title" id="modalIngressoCondominio">Buscar ou Ingressar em um Condomínio</h5>
-                <button type="button" className="btn-close" aria-label="Close" onClick={() => setShowIngressoModal(false)}></button>
-              </div>
-              <div className="modal-body">
-                <div className="mb-3">
-                  <label className="form-label" htmlFor="cnpjSearch">Buscar Condomínio pelo CNPJ</label>
-                  <input
-                    type="text"
-                    id="cnpjSearch"
-                    className="form-control"
-                    value={cnpjSearch}
-                    onChange={(e) => setCnpjSearch(e.target.value)}
-                    placeholder="Digite o CNPJ"
-                  />
-                  <button className="btn btn-primary mt-2" onClick={handleSearchCondominio}>Buscar</button>
-                </div>
-
-                {condominioEncontrado && (
-                  <div className="mt-3">
-                    <h5>Condomínio Encontrado:</h5>
-                    <p><strong>Nome:</strong> {condominioEncontrado.nome}</p>
-                    <p><strong>CNPJ:</strong> {condominioEncontrado.cnpj}</p>
-                    <p><strong>Endereço:</strong> {condominioEncontrado.endereco}</p>
-                    <button className="btn btn-success" onClick={handleIngressarCondominio}>Ingressar</button>
-                  </div>
-                )}
-              </div>
-              <div className="modal-footer">
-                <button type="button" className="btn btn-secondary" onClick={() => setShowIngressoModal(false)}>
-                  Fechar
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Modal de criação do condomínio (já existente) */}
-      {showModal && (
-        <div className="modal fade show d-block" tabIndex="-1" role="dialog" aria-labelledby="modalCriacaoCondominio" aria-hidden="true" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
-          <div className="modal-dialog" role="document">
-            <div className="modal-content">
-              <div className="modal-header">
-                <h5 className="modal-title" id="modalCriacaoCondominio">Criar Condomínio</h5>
-                <button type="button" className="btn-close" aria-label="Close" onClick={() => setShowModal(false)}></button>
-              </div>
-              <div className="modal-body">
-                <form onSubmit={handleSubmit}>
-                  <div className="mb-3">
-                    <label htmlFor="nome" className="form-label">Nome do Condomínio</label>
-                    <input type="text" id="nome" className="form-control" required />
-                  </div>
-                  <div className="mb-3">
-                    <label htmlFor="cnpj" className="form-label">CNPJ</label>
-                    <input type="text" id="cnpj" className="form-control" required />
-                  </div>
-                  <div className="mb-3">
-                    <label htmlFor="endereco" className="form-label">Endereço</label>
-                    <input type="text" id="endereco" className="form-control" required />
-                  </div>
-                  <div className="mb-3">
-                    <label htmlFor="quantidadeAreas" className="form-label">Quantidade de Áreas Comuns</label>
-                    <input
-                      type="number"
-                      id="quantidadeAreas"
-                      className="form-control"
-                      value={quantidadeAreas}
-                      onChange={handleQuantidadeAreasChange}
-                      min="1"
-                    />
-                  </div>
-                  {areasComuns.map((area, index) => (
-                    <div key={area.id} className="mb-3">
-                      <label className="form-label">Área Comum {index + 1}</label>
-                      <input
-                        type="text"
-                        className="form-control"
-                        placeholder="Nome da área"
-                        value={area.nome}
-                        onChange={(e) => handleAreaChange(index, 'nome', e.target.value)}
-                      />
-                      <select
-                        className="form-control mt-2"
-                        value={area.disponibilidade}
-                        onChange={(e) => handleAreaChange(index, 'disponibilidade', e.target.value)}
-                      >
-                        <option value="disponível">Disponível</option>
-                        <option value="indisponível">Indisponível</option>
-                      </select>
+        {condominiosUsuario.length > 0 && (
+          <div className="mt-4">
+            <h2 className="mb-3">Seus Condomínios</h2>
+            <div className="row">
+              {condominiosUsuario.map(condominio => (
+                <div key={condominio.id} className="col-md-6 col-lg-4 mb-4">
+                  <Link href={`/condo?id=${condominio.id}`} className="text-decoration-none text-dark">
+                    <div className="card h-100 shadow-sm">
+                      <div className="card-body">
+                        <h5 className="card-title">{condominio.nome}</h5>
+                        <p className="card-text mb-1"><strong>CNPJ:</strong> {condominio.cnpj}</p>
+                        <p className="card-text mb-0"><strong>Endereço:</strong> {condominio.endereco}</p>
+                      </div>
                     </div>
-                  ))}
-                  <button type="submit" className="btn btn-primary mt-3">Criar Condomínio</button>
-                </form>
-              </div>
-              <div className="modal-footer">
-                <button type="button" className="btn btn-secondary" onClick={() => setShowModal(false)}>
-                  Fechar
-                </button>
+                  </Link>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+        
+        <div className="mt-5">
+          <LogoutButton />
+        </div>
+
+        {showIngressoModal && (
+          <div className="modal fade show d-block" tabIndex="-1" role="dialog" aria-labelledby="modalIngressoCondominio" aria-hidden="true" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
+            <div className="modal-dialog modal-dialog-centered" role="document">
+              <div className="modal-content">
+                <div className="modal-header">
+                  <h5 className="modal-title" id="modalIngressoCondominio">Buscar ou Ingressar em um Condomínio</h5>
+                  <button type="button" className="btn-close" aria-label="Close" onClick={() => { setShowIngressoModal(false); setCondominioEncontrado(null); setCnpjSearch(''); }}></button>
+                </div>
+                <div className="modal-body">
+                  <div className="mb-3">
+                    <label className="form-label" htmlFor="cnpjSearch">Buscar Condomínio pelo CNPJ</label>
+                    <input
+                      type="text"
+                      id="cnpjSearch"
+                      className="form-control"
+                      value={cnpjSearch}
+                      onChange={(e) => setCnpjSearch(e.target.value)}
+                      placeholder="Digite o CNPJ (apenas números)"
+                    />
+                    <button className="btn btn-primary mt-2 w-100" onClick={handleSearchCondominio}>Buscar</button>
+                  </div>
+
+                  {condominioEncontrado && (
+                    <div className="mt-3 p-3 border rounded bg-light">
+                      <h5>Condomínio Encontrado:</h5>
+                      <p className="mb-1"><strong>Nome:</strong> {condominioEncontrado.nome}</p>
+                      <p className="mb-1"><strong>CNPJ:</strong> {condominioEncontrado.cnpj}</p>
+                      <p className="mb-3"><strong>Endereço:</strong> {condominioEncontrado.endereco}</p>
+                      <button className="btn btn-success w-100" onClick={handleIngressarCondominio}>Solicitar Ingresso</button>
+                    </div>
+                  )}
+                  {!condominioEncontrado && cnpjSearch && (
+                    <p className="text-warning text-center mt-3">Nenhum condomínio encontrado com o CNPJ informado.</p>
+                  )}
+                </div>
+                <div className="modal-footer">
+                  <button type="button" className="btn btn-secondary" onClick={() => { setShowIngressoModal(false); setCondominioEncontrado(null); setCnpjSearch(''); }}>
+                    Fechar
+                  </button>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      )}
-    </div>
+        )}
+
+        {showModal && (
+          <div className="modal fade show d-block" tabIndex="-1" role="dialog" aria-labelledby="modalCriacaoCondominio" aria-hidden="true" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
+            <div className="modal-dialog modal-dialog-centered" role="document">
+              <div className="modal-content">
+                <div className="modal-header">
+                  <h5 className="modal-title" id="modalCriacaoCondominio">Criar Novo Condomínio</h5>
+                  <button type="button" className="btn-close" aria-label="Close" onClick={() => setShowModal(false)}></button>
+                </div>
+                <div className="modal-body">
+                  <form onSubmit={handleSubmit}>
+                    <div className="mb-3">
+                      <label htmlFor="nome" className="form-label">Nome do Condomínio</label>
+                      <input type="text" id="nome" className="form-control" required placeholder="Ex: Condomínio Residencial Aurora" />
+                    </div>
+                    <div className="mb-3">
+                      <label htmlFor="cnpj" className="form-label">CNPJ</label>
+                      <input type="text" id="cnpj" className="form-control" required placeholder="Ex: 00.000.000/0000-00" />
+                    </div>
+                    <div className="mb-3">
+                      <label htmlFor="endereco" className="form-label">Endereço</label>
+                      <input type="text" id="endereco" className="form-control" required placeholder="Ex: Rua das Flores, 123 - Centro" />
+                    </div>
+                    <div className="mb-3">
+                      <label htmlFor="quantidadeAreas" className="form-label">Quantidade de Áreas Comuns</label>
+                      <input
+                        type="number"
+                        id="quantidadeAreas"
+                        className="form-control"
+                        value={quantidadeAreas}
+                        onChange={handleQuantidadeAreasChange}
+                        min="0"
+                        placeholder="Número de áreas como salão de festas, academia, etc."
+                      />
+                    </div>
+                    {areasComuns.map((area, index) => (
+                      <div key={index} className="mb-3 p-2 border rounded bg-light">
+                        <label className="form-label d-block fw-bold">Área Comum {index + 1}</label>
+                        <input
+                          type="text"
+                          className="form-control"
+                          placeholder="Nome da área (Ex: Salão de Festas)"
+                          value={area.nome}
+                          onChange={(e) => handleAreaChange(index, 'nome', e.target.value)}
+                          required
+                        />
+                        <select
+                          className="form-control mt-2"
+                          value={area.disponibilidade}
+                          onChange={(e) => handleAreaChange(index, 'disponibilidade', e.target.value)}
+                        >
+                          <option value="disponível">Disponível</option>
+                          <option value="indisponível">Indisponível</option>
+                        </select>
+                      </div>
+                    ))}
+                    <button type="submit" className="btn btn-primary mt-3 w-100">Criar Condomínio</button>
+                  </form>
+                </div>
+                <div className="modal-footer">
+                  <button type="button" className="btn btn-secondary" onClick={() => setShowModal(false)}>
+                    Fechar
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </>
   );
 }
