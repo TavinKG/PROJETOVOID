@@ -2,6 +2,8 @@ import { useRouter } from 'next/router';
 import { useState } from 'react';
 import Cookies from 'js-cookie';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import Head from 'next/head'; // Importar Head para SEO e título da página
+import Link from 'next/link'; // Importar Link do Next.js para navegação otimizada
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -35,58 +37,74 @@ export default function Login() {
         Cookies.set('userId', data.id);
 
         console.log('Usuário logado com sucesso:', data);
-        router.push('/home');
+        router.push('/home'); // Redireciona para a home
       } else {
-        setError(data.error || 'Erro ao fazer login');
+        // Assume data.message for more specific errors from backend
+        setError(data.message || data.error || 'Erro ao fazer login. Verifique suas credenciais.');
       }
     } catch (err) {
-      setError('Erro na comunicação com o servidor');
-      console.error(err);
+      setError('Erro na comunicação com o servidor. Tente novamente mais tarde.');
+      console.error('Login error:', err);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="container d-flex flex-column align-items-center mt-5">
-      <div className="card shadow p-4 w-100" style={{ maxWidth: '600px' }}>
-        <div className="text-center mb-4">
-          <img src="/logos/logo-header1.png" alt="VOID Logo" className="m-5" style={{ height: '60px' }} />
-          <h2>Login</h2>
+    <>
+      <Head>
+        <title>Login - PROJETO VOID</title>
+      </Head>
+      <div className="d-flex flex-column align-items-center justify-content-center min-vh-100 bg-light">
+        <div className="card shadow p-4 w-100" style={{ maxWidth: '450px' }}> {/* Levemente reduzido o maxWidth para um card de login mais focado */}
+          <div className="text-center mb-4">
+            <img src="/logos/logo-header1.png" alt="VOID Logo" className="mb-4" style={{ height: '80px' }} />
+            <h2 className="mb-0">Login</h2>
+          </div>
+          <form onSubmit={handleLogin}>
+            <div className="mb-3">
+              <label htmlFor="email" className="form-label">Endereço de e-mail</label>
+              <input
+                type="email"
+                id="email"
+                name="email"
+                className="form-control"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+            </div>
+            <div className="mb-3">
+              <label htmlFor="password" className="form-label">Senha</label>
+              <input
+                type="password"
+                id="password"
+                name="password"
+                className="form-control"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+            </div>
+            <button
+              type="submit"
+              className="btn btn-dark w-100 py-2 mt-3"
+              disabled={loading}
+            >
+              {loading ? 'Entrando...' : 'Entrar'} {/* Alterado texto de loading */}
+            </button>
+            {error && <p className="text-danger text-center mt-3">{error}</p>}
+
+            {/* Novo elemento: Link para a página de Cadastro */}
+            <p className="text-center mt-3 mb-0">
+              Não tem uma conta?{' '}
+              <Link href="/signup" className="text-decoration-none">
+                Cadastre-se aqui
+              </Link>
+            </p>
+          </form>
         </div>
-        <form onSubmit={handleLogin}>
-          <div className="mb-3">
-            <label className="form-label">Endereço de e-mail</label>
-            <input
-              type="email"
-              name="email"
-              className="form-control"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
-          </div>
-          <div className="mb-3">
-            <label className="form-label">Senha</label>
-            <input
-              type="password"
-              name="password"
-              className="form-control"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
-          </div>
-          <button
-            type="submit"
-            className="btn btn-dark w-100"
-            disabled={loading}
-          >
-            {loading ? 'Carregando...' : 'Entrar'}
-          </button>
-          {error && <p className="text-danger mt-3">{error}</p>}
-        </form>
       </div>
-    </div>
+    </>
   );
 }
