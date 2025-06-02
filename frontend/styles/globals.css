@@ -1,6 +1,9 @@
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/* globals.css */
+
+/* Remova ou ajuste as variáveis CSS se elas não forem estritamente necessárias para esta cor de fundo */
+/* :root {
+  --background: #051520;
+  --foreground: #ffffff;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -8,20 +11,25 @@
     --background: #0a0a0a;
     --foreground: #ededed;
   }
-}
+} */
 
 html,
 body {
+  height: 100%; /* Garante que HTML e Body ocupem 100% da altura da viewport */
+  margin: 0; /* Remove margens padrão do body */
+  padding: 0; /* Remove preenchimento padrão do body */
   max-width: 100vw;
-  overflow-x: hidden;
+  overflow-x: hidden; /* Mantém o overflow-x hidden, mas verifique se não causa problemas em layouts futuros */
 }
 
 body {
-  color: var(--foreground);
-  background: var(--background);
+  /* Defina a cor de fundo diretamente aqui, sem as variáveis, para garantir a aplicação */
+  background-color: #051520; /* Fundo muito escuro conforme sua identidade visual */
+  color: #ffffff; /* Texto geral em branco */
   font-family: Arial, Helvetica, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  min-height: 100vh; /* Adicione esta propriedade para garantir que o body cubra toda a altura da viewport */
 }
 
 * {
@@ -35,8 +43,8 @@ a {
   text-decoration: none;
 }
 
-@media (prefers-color-scheme: dark) {
+/* @media (prefers-color-scheme: dark) {
   html {
     color-scheme: dark;
   }
-}
+} */
