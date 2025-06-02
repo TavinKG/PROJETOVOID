@@ -86,6 +86,23 @@ class CondominioDAO {
     console.log("Condomínio deletado com sucesso:", data);
     return data; // Retorna os dados do condomínio deletado
   }
+
+  static async getAreasComunsByCondominioId(condominioId) {
+        // console.log(`Tentando buscar áreas comuns para condominio_id: ${condominioId}`); // Log para depuração
+
+        const { data, error } = await supabase
+            .from('areas_comuns') // Nome da sua tabela de áreas comuns
+            .select('*') // Seleciona todas as colunas
+            .eq('condominio_id', condominioId); // Filtra pelo ID do condomínio
+
+        if (error) {
+            console.error('Erro ao buscar áreas comuns no Supabase:', error.message);
+            throw new Error(`Erro ao buscar áreas comuns: ${error.message}`);
+        }
+
+        // console.log('Áreas comuns encontradas:', data); // Log para depuração
+        return data; // Retorna um array de áreas comuns
+    }
 }
 
 module.exports = CondominioDAO;

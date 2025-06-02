@@ -36,6 +36,24 @@ class CondominioController {
       res.status(500).json({ message: 'Erro ao buscar condomínio.' });
     }
   }
+
+  static async listarAreasComuns(req, res) {
+        const { condominioId } = req.params; // Pega o ID do condomínio dos parâmetros da URL
+
+        try {
+            const areasComuns = await CondominioDAO.getAreasComunsByCondominioId(condominioId);
+            
+            if (!areasComuns || areasComuns.length === 0) {
+                return res.status(404).json({ message: 'Nenhuma área comum encontrada para este condomínio.', areas: [] });
+            }
+
+            res.status(200).json({ message: 'Áreas comuns listadas com sucesso!', areas: areasComuns });
+
+        } catch (error) {
+            console.error('Erro ao listar áreas comuns:', error);
+            res.status(500).json({ message: 'Erro ao listar áreas comuns.', error: error.message });
+        }
+    }
 }
 
 module.exports = CondominioController;

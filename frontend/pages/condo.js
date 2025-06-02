@@ -1,3 +1,4 @@
+// pages/condo.js
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { useEffect, useState, useCallback } from 'react';
 import Cookies from 'js-cookie';
@@ -84,12 +85,11 @@ export default function Condo() {
             <div className="container mt-5">
                 <h1 className="mb-4">Página do Condomínio</h1>
 
-                {/* Container para os botões de ação - Reestruturado para maior robustez */}
-                <div className="d-flex flex-wrap align-items-center mb-4"> {/* Adicionado align-items-center */}
+                <div className="d-flex flex-wrap align-items-center mb-4">
                     {/* Botão de Voltar para Home */}
                     <button
                         type="button"
-                        className="btn btn-secondary me-2 mb-2" 
+                        className="btn btn-secondary me-2 mb-2"
                         onClick={() => router.push('/home')}
                     >
                         Voltar para Home
@@ -99,7 +99,7 @@ export default function Condo() {
                     {tipoUsuario === 'Administrador' && (
                         <button
                             type="button"
-                            className="btn btn-primary me-2 mb-2" 
+                            className="btn btn-primary me-2 mb-2"
                             onClick={() => {
                                 setNotificacoesToggle(!notificacoesToggle);
                                 if (!notificacoesToggle) {
@@ -111,10 +111,19 @@ export default function Condo() {
                         </button>
                     )}
 
+                    {/* NOVO BOTÃO: Áreas Comuns */}
+                    <button
+                        type="button"
+                        className="btn btn-info me-2 mb-2" // Cor "info" para diferenciar
+                        onClick={() => router.push(`/areas-comuns?id=${condominioID}`)}
+                    >
+                        Áreas Comuns
+                    </button>
+
                     {/* Botão de Avisos */}
                     <button
                         type="button"
-                        className="btn btn-secondary mb-2" 
+                        className="btn btn-secondary mb-2"
                         onClick={() => router.push(`/avisos?id=${condominioID}`)}
                     >
                         Avisos
