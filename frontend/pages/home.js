@@ -22,6 +22,8 @@ export default function Home() {
   const [cnpjSearch, setCnpjSearch] = useState('');
   const [condominioEncontrado, setCondominioEncontrado] = useState(null);
   const [condominiosUsuario, setCondominiosUsuario] = useState([]);
+  const [searchLoading, setSearchLoading] = useState(false); // Novo estado para loading da busca
+  const [searchAttempted, setSearchAttempted] = useState(false); // Novo estado para indicar que uma busca foi tentada
 
   const fetchCondominiosUsuario = useCallback(async () => {
     if (!userId) return;
@@ -40,6 +42,34 @@ export default function Home() {
     }
   }, [userId]);
 
+  const handleSearchCondominio = useCallback(async (cnpj) => {
+    // Validação inicial: se o CNPJ está vazio, reseta os estados e não faz a busca
+    if (cnpj.length === 0) {
+      setCondominioEncontrado(null);
+      setSearchAttempted(false);
+      setSearchLoading(false);
+      return;
+    }
+
+    setSearchLoading(true);
+    setSearchAttempted(true); // Marca que uma busca foi tentada
+    try {
+      const response = await fetch(`http://localhost:5000/api/condominios/buscar/${cnpj}`);
+      if (response.ok) {
+        const data = await response.json();
+        setCondominioEncontrado(data);
+      } else {
+        setCondominioEncontrado(null); // Limpa o condomínio encontrado se a busca falhar
+      }
+    } catch (error) {
+      console.error('Erro ao buscar condomínio:', error);
+      setCondominioEncontrado(null); // Limpa o condomínio encontrado em caso de erro
+    } finally {
+      setSearchLoading(false); // Finaliza o loading
+    }
+  }, []); 
+
+
   useEffect(() => {
     if (!tipoUsuario || !userId) {
       router.push('/login');
@@ -48,11 +78,10 @@ export default function Home() {
     }
   }, [tipoUsuario, userId, router, fetchCondominiosUsuario]);
 
-  // Modificação principal neste useEffect
+  // useEffect para definir a mensagem de boas-vindas
   useEffect(() => {
     if (tipoUsuario === 'Morador') {
       if (condominiosUsuario.length === 0) {
-        // Mensagem para morador sem condomínios
         setWelcomeMessage(
           <>
             Você ainda não está em nenhum condomínio. Por favor,{' '}
@@ -62,7 +91,6 @@ export default function Home() {
           </>
         );
       } else {
-        // Mensagem para morador com condomínios (mantém a opção de entrar em outro)
         setWelcomeMessage(
           <>
             Gerencie suas atividades e informações nos condomínios vinculados ou{' '}
@@ -73,7 +101,6 @@ export default function Home() {
         );
       }
     } else if (tipoUsuario === 'Administrador') {
-      // Mensagem para Administrador
       setWelcomeMessage(
         <>
           Você pode{' '}
@@ -89,23 +116,7 @@ export default function Home() {
     }
   }, [tipoUsuario, condominiosUsuario]);
 
-  const handleSearchCondominio = async () => {
-    try {
-      const response = await fetch(`http://localhost:5000/api/condominios/buscar/${cnpjSearch}`);
-      if (response.ok) {
-        const data = await response.json();
-        setCondominioEncontrado(data);
-        alert('Condomínio encontrado com sucesso!');
-      } else {
-        setCondominioEncontrado(null);
-        alert('Condomínio não encontrado. Verifique o CNPJ.');
-      }
-    } catch (error) {
-      console.error('Erro ao buscar condomínio:', error);
-      setCondominioEncontrado(null);
-      alert('Erro ao buscar condomínio.');
-    }
-  };
+  // O useEffect de debounce foi REMOVIDO daqui.
 
   const handleIngressarCondominio = async () => {
     try {
@@ -131,6 +142,7 @@ export default function Home() {
         setShowIngressoModal(false);
         setCnpjSearch('');
         setCondominioEncontrado(null);
+        setSearchAttempted(false);
       } else {
         const errorData = await response.json();
         alert(`Erro ao ingressar no condomínio: ${errorData.message || 'Erro desconhecido'}`);
@@ -198,7 +210,7 @@ export default function Home() {
         if (vinculoResponse.ok) {
           alert('Condomínio criado e vínculo estabelecido com sucesso!');
           setShowModal(false);
-          fetchCondominiosUsuario(); // Atualiza a lista de condomínios do usuário após a criação
+          fetchCondominiosUsuario();
         } else {
           const vinculoError = await vinculoResponse.json();
           alert(`Erro ao criar vínculo: ${vinculoError.message || 'Erro desconhecido'}`);
@@ -253,7 +265,7 @@ export default function Home() {
               <div className="modal-content">
                 <div className="modal-header">
                   <h5 className="modal-title" id="modalIngressoCondominio">Buscar ou Ingressar em um Condomínio</h5>
-                  <button type="button" className="btn-close" aria-label="Close" onClick={() => { setShowIngressoModal(false); setCondominioEncontrado(null); setCnpjSearch(''); }}></button>
+                  <button type="button" className="btn-close" aria-label="Close" onClick={() => { setShowIngressoModal(false); setCondominioEncontrado(null); setCnpjSearch(''); setSearchAttempted(false); }}></button>
                 </div>
                 <div className="modal-body">
                   <div className="mb-3">
@@ -263,10 +275,16 @@ export default function Home() {
                       id="cnpjSearch"
                       className="form-control"
                       value={cnpjSearch}
-                      onChange={(e) => setCnpjSearch(e.target.value)}
+                      onChange={(e) => {
+                        setCnpjSearch(e.target.value.replace(/\D/g, ''));
+                        setCondominioEncontrado(null); // Limpa o condomínio encontrado ao digitar
+                        setSearchAttempted(false); // Reseta a tentativa de busca
+                      }}
                       placeholder="Digite o CNPJ (apenas números)"
                     />
-                    <button className="btn btn-primary mt-2 w-100" onClick={handleSearchCondominio}>Buscar</button>
+                    <button className="btn btn-primary mt-2 w-100" onClick={() => handleSearchCondominio(cnpjSearch)} disabled={searchLoading}>
+                      {searchLoading ? 'Buscando...' : 'Buscar'}
+                    </button>
                   </div>
 
                   {condominioEncontrado && (
@@ -278,12 +296,13 @@ export default function Home() {
                       <button className="btn btn-success w-100" onClick={handleIngressarCondominio}>Solicitar Ingresso</button>
                     </div>
                   )}
-                  {!condominioEncontrado && cnpjSearch && (
+
+                  {!condominioEncontrado && searchAttempted && !searchLoading && cnpjSearch.length > 0 && (
                     <p className="text-warning text-center mt-3">Nenhum condomínio encontrado com o CNPJ informado.</p>
                   )}
                 </div>
                 <div className="modal-footer">
-                  <button type="button" className="btn btn-secondary" onClick={() => { setShowIngressoModal(false); setCondominioEncontrado(null); setCnpjSearch(''); }}>
+                  <button type="button" className="btn btn-secondary" onClick={() => { setShowIngressoModal(false); setCondominioEncontrado(null); setCnpjSearch(''); setSearchAttempted(false); }}>
                     Fechar
                   </button>
                 </div>
