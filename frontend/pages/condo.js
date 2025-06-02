@@ -1,21 +1,20 @@
 import 'bootstrap/dist/css/bootstrap.min.css';
-import { useEffect, useState, useCallback } from 'react'; // Adicionado useCallback
+import { useEffect, useState, useCallback } from 'react';
 import Cookies from 'js-cookie';
 import { useRouter } from 'next/router';
 import LogoutButton from '../components/LogoutButton';
-import Head from 'next/head'; // Importar Head para o título da página
+import Head from 'next/head'; 
 
 export default function Condo() {
     const router = useRouter();
     const userId = Cookies.get('userId');
     const [condominioID, setCondominioId] = useState(null);
-    const [condominiosPendentes, setCondominiosPendentes] = useState([]); // Renomeado para clareza
+    const [condominiosPendentes, setCondominiosPendentes] = useState([]);
     const [notificacoesToggle, setNotificacoesToggle] = useState(false);
     const [tipoUsuario, setTipoUsuario] = useState(null);
 
-    // Usa useCallback para memorizar a função e evitar recriações desnecessárias
     const fetchCondominiosPendentes = useCallback(async () => {
-        if (!condominioID) return; // Garante que condominioID existe
+        if (!condominioID) return;
 
         try {
             const response = await fetch(`http://localhost:5000/api/usuariocondominio/${condominioID}/pendentes`);
@@ -25,13 +24,13 @@ export default function Condo() {
                 setCondominiosPendentes(data.data);
             } else {
                 console.error('Erro ao buscar usuários pendentes:', response.statusText);
-                setCondominiosPendentes([]); // Garante lista vazia em caso de erro
+                setCondominiosPendentes([]);
             }
         } catch (error) {
             console.error('Erro ao buscar dados dos usuários:', error);
-            setCondominiosPendentes([]); // Garante lista vazia em caso de erro
+            setCondominiosPendentes([]);
         }
-    }, [condominioID]); // Depende do condominioID
+    }, [condominioID]);
 
     useEffect(() => {
         if (!userId) {
@@ -42,12 +41,11 @@ export default function Condo() {
         }
     }, [userId, router]);
 
-    // Dispara a busca quando condominioID é definido ou muda
     useEffect(() => {
         if (condominioID) {
             fetchCondominiosPendentes();
         }
-    }, [condominioID, fetchCondominiosPendentes]); // Adicionado fetchCondominiosPendentes como dependência
+    }, [condominioID, fetchCondominiosPendentes]);
 
     const alterarStatusVinculo = async (usuarioId, status) => {
         try {
@@ -62,13 +60,9 @@ export default function Condo() {
             if (response.ok) {
                 alert(status === 1 ? 'Solicitação aceita com sucesso!' : 'Solicitação recusada com sucesso!');
                 
-                // *** MELHORIA AQUI: REMOVER DA LISTA INSTANTANEAMENTE ***
                 setCondominiosPendentes(prevPendentes => 
                     prevPendentes.filter(usuario => usuario.id !== usuarioId)
                 );
-                // fetchCondominiosPendentes(); // Esta linha se torna opcional para atualização imediata, mas pode ser mantida para garantir consistência a longo prazo
-                                               // Se houver muitos administradores, um fetch pode ser melhor para ter a lista mais atualizada do BD.
-                                               // Para o seu caso (TCC), filtrar localmente já é suficiente e resolve o problema visual.
 
             } else {
                 const error = await response.json();
@@ -84,55 +78,66 @@ export default function Condo() {
     return (
         <>
             <Head>
-                <title>Condomínio - Notificações</title>
+                <title>Condomínio - Detalhes</title>
             </Head>
 
-            <div className="container mt-5"> {/* Container para melhor organização */}
-                <h1 className="mb-4">Página do Condomínio</h1> {/* Título da página */}
+            <div className="container mt-5">
+                <h1 className="mb-4">Página do Condomínio</h1>
 
-                {/* Botão de Notificações (visível apenas para Administrador) */}
-                {tipoUsuario === 'Administrador' && (
+                {/* Container para os botões de ação - Reestruturado para maior robustez */}
+                <div className="d-flex flex-wrap align-items-center mb-4"> {/* Adicionado align-items-center */}
+                    {/* Botão de Voltar para Home */}
                     <button
                         type="button"
-                        className="btn btn-primary mt-3 me-2" // Adicionado margem para o botão de Avisos
-                        onClick={() => {
-                            setNotificacoesToggle(!notificacoesToggle);
-                            // Se as notificações forem abertas, force a busca para ter os dados mais recentes
-                            if (!notificacoesToggle) {
-                                fetchCondominiosPendentes(); 
-                            }
-                        }}
+                        className="btn btn-secondary me-2 mb-2" 
+                        onClick={() => router.push('/home')}
                     >
-                        Notificações ({condominiosPendentes.length}) {/* Contagem de notificações */}
+                        Voltar para Home
                     </button>
-                )}
 
-                {/* Botão de Avisos */}
-                <button
-                    type="button"
-                    className="btn btn-secondary mt-3"
-                    onClick={() => router.push(`/avisos?id=${condominioID}`)} // CondominioID já deve estar disponível
-                >
-                    Avisos
-                </button>
+                    {/* Botão de Notificações (visível apenas para Administrador) */}
+                    {tipoUsuario === 'Administrador' && (
+                        <button
+                            type="button"
+                            className="btn btn-primary me-2 mb-2" 
+                            onClick={() => {
+                                setNotificacoesToggle(!notificacoesToggle);
+                                if (!notificacoesToggle) {
+                                    fetchCondominiosPendentes(); 
+                                }
+                            }}
+                        >
+                            Notificações ({condominiosPendentes.length})
+                        </button>
+                    )}
+
+                    {/* Botão de Avisos */}
+                    <button
+                        type="button"
+                        className="btn btn-secondary mb-2" 
+                        onClick={() => router.push(`/avisos?id=${condominioID}`)}
+                    >
+                        Avisos
+                    </button>
+                </div>
 
                 {/* Seção de Solicitações (visível se notificacoesToggle for true) */}
-                {notificacoesToggle && tipoUsuario === 'Administrador' && ( // Verifica também se é Administrador
+                {notificacoesToggle && tipoUsuario === 'Administrador' && (
                     <div className="mt-4">
-                        <h2>Solicitações de Ingresso</h2> {/* Título mais descritivo */}
+                        <h2>Solicitações de Ingresso</h2>
                         {condominiosPendentes.length > 0 ? (
                             condominiosPendentes.map((usuario) => (
-                                <div key={usuario.id} className="card mb-3 shadow-sm"> {/* Adicionado sombra */}
+                                <div key={usuario.id} className="card mb-3 shadow-sm">
                                     <div className="card-body">
                                         <h5 className="card-title">{usuario.nome}</h5>
                                         <p className="card-text mb-1"><strong>Email:</strong> {usuario.email}</p>
                                         <p className="card-text mb-1"><strong>CPF:</strong> {usuario.cpf}</p>
                                         <p className="card-text mb-1"><strong>Telefone:</strong> {usuario.telefone}</p>
                                         <p className="card-text mb-2"><strong>Tipo de Usuário:</strong> {usuario.tipo_usuario}</p>
-                                        <div className="d-flex justify-content-end"> {/* Alinha botões à direita */}
+                                        <div className="d-flex justify-content-end">
                                             <button
                                                 type="button"
-                                                className="btn btn-success me-2" // Alterado para success e margem
+                                                className="btn btn-success me-2"
                                                 onClick={() => alterarStatusVinculo(usuario.id, 1)}
                                             >
                                                 Aceitar

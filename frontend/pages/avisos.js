@@ -1,9 +1,9 @@
 import 'bootstrap/dist/css/bootstrap.min.css';
-import { useEffect, useState, useCallback } from 'react'; // Adicionado useCallback
+import { useEffect, useState, useCallback } from 'react';
 import Cookies from 'js-cookie';
 import { useRouter } from 'next/router';
 import LogoutButton from '../components/LogoutButton';
-import Head from 'next/head'; // Importar Head para o título da página
+import Head from 'next/head';
 
 export default function Avisos() {
     const router = useRouter();
@@ -25,7 +25,7 @@ export default function Avisos() {
     }, [tipoUsuario, userId, router]);
 
     const fetchListaAvisos = useCallback(async () => {
-        if (!condominioID) return; // Garante que condominioID existe
+        if (!condominioID) return;
 
         try {
             const response = await fetch(`http://localhost:5000/api/avisos/${condominioID}/list`);
@@ -40,22 +40,21 @@ export default function Avisos() {
             console.error('Erro ao listar avisos:', error);
             setListaAvisos([]);
         }
-    }, [condominioID]); // Depende do condominioID
+    }, [condominioID]);
 
     useEffect(() => {
         if (condominioID) {
             fetchListaAvisos();
         }
-    }, [condominioID, fetchListaAvisos]); // Adicionado fetchListaAvisos como dependência
+    }, [condominioID, fetchListaAvisos]);
 
     const criarAviso = async () => {
-        // Enviar a data no formato ISO para o backend
         const avisoData = {
-            id: null, // O ID deve ser gerado pelo backend/banco de dados
+            id: null,
             titulo,
             mensagem,
             autor: userId,
-            date: new Date().toISOString(), // CORREÇÃO AQUI: Apenas toISOString()
+            date: new Date().toISOString(),
             condominioId: condominioID,
         };
 
@@ -73,7 +72,7 @@ export default function Avisos() {
                 setTitulo('');
                 setMensagem('');
                 setModalOpen(false);
-                fetchListaAvisos(); // Recarrega a lista para mostrar o novo aviso
+                fetchListaAvisos();
             } else {
                 const error = await response.json();
                 console.error('Erro ao criar aviso:', error.message);
@@ -88,16 +87,25 @@ export default function Avisos() {
     return (
         <>
             <Head>
-                <title>Avisos - Condomínio</title> {/* Título da página */}
+                <title>Avisos - Condomínio</title>
             </Head>
 
-            <div className="container mt-5"> {/* Container para melhor organização */}
-                <h1 className="mb-4">Avisos do Condomínio</h1> {/* Título da página */}
+            <div className="container mt-5">
+                <h1 className="mb-4">Avisos do Condomínio</h1>
+
+                {/* Botão de Voltar */}
+                <button
+                    type="button"
+                    className="btn btn-secondary mb-3 me-2" // Adicionado margem direita
+                    onClick={() => router.back()} // Volta para a página anterior
+                >
+                    Voltar
+                </button>
 
                 {tipoUsuario === 'Administrador' && (
                     <button
                         type="button"
-                        className="btn btn-success mb-4" // Adicionado margem inferior
+                        className="btn btn-success mb-3" // Ajustado margem
                         onClick={() => setModalOpen(true)}
                     >
                         Criar Aviso
@@ -106,8 +114,8 @@ export default function Avisos() {
 
                 {/* Modal de criação de aviso */}
                 {modalOpen && (
-                    <div className="modal d-block" tabIndex="-1" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}> {/* Adicionado background */}
-                        <div className="modal-dialog modal-dialog-centered"> {/* Centralizado o modal */}
+                    <div className="modal d-block" tabIndex="-1" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
+                        <div className="modal-dialog modal-dialog-centered">
                             <div className="modal-content">
                                 <div className="modal-header">
                                     <h5 className="modal-title">Criar Novo Aviso</h5>
@@ -128,7 +136,7 @@ export default function Avisos() {
                                             className="form-control"
                                             value={titulo}
                                             onChange={(e) => setTitulo(e.target.value)}
-                                            required // Campo obrigatório
+                                            required
                                             placeholder="Ex: Manutenção da Piscina"
                                         />
                                     </div>
@@ -142,7 +150,7 @@ export default function Avisos() {
                                             rows="4"
                                             value={mensagem}
                                             onChange={(e) => setMensagem(e.target.value)}
-                                            required // Campo obrigatório
+                                            required
                                             placeholder="Descreva o aviso aqui..."
                                         ></textarea>
                                     </div>
@@ -171,25 +179,24 @@ export default function Avisos() {
                 {listaAvisos.length > 0 ? (
                     <div className="mt-4">
                         {listaAvisos.map((aviso) => {
-                            // CORREÇÃO AQUI: Usar toLocaleDateString para formatação robusta e localizada
                             const date = new Date(aviso.data);
-                            const dataFormatada = date.toLocaleDateString('pt-BR', { // Formato DD/MM/YYYY
+                            const dataFormatada = date.toLocaleDateString('pt-BR', {
                                 day: '2-digit',
                                 month: '2-digit',
                                 year: 'numeric'
                             });
 
                             return (
-                                <div key={aviso.id} className="card mb-3 shadow-sm"> {/* Adicionado sombra */}
+                                <div key={aviso.id} className="card mb-3 shadow-sm">
                                     <div className="card-body">
                                         <h5 className="card-title">{aviso.titulo}</h5>
                                         <p className="card-text mb-1">
-                                            <strong>Autor:</strong> {aviso.usuario ? aviso.usuario.nome : 'Desconhecido'} {/* Verifica se usuario existe */}
+                                            <strong>Autor:</strong> {aviso.usuario ? aviso.usuario.nome : 'Desconhecido'}
                                         </p>
                                         <p className="card-text mb-1">
                                             <strong>Mensagem:</strong> {aviso.mensagem}
                                         </p>
-                                        <p className="card-text mb-0"> {/* Removido margem inferior se for o último item */}
+                                        <p className="card-text mb-0">
                                             <strong>Data:</strong> {dataFormatada}
                                         </p>
                                     </div>
