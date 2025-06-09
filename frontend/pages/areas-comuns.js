@@ -6,7 +6,6 @@ import { useRouter } from 'next/router';
 import LogoutButton from '../components/LogoutButton';
 import Head from 'next/head';
 
-// Importar React-Calendar e seus estilos
 import Calendar from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
 
@@ -21,18 +20,17 @@ export default function AreasComuns() {
 
     const [showReservaModal, setShowReservaModal] = useState(false);
     const [selectedArea, setSelectedArea] = useState(null);
-    const [selectedDate, setSelectedDate] = useState(new Date()); // Data selecionada no calendário
-    const [availableSlots, setAvailableSlots] = useState([]); // Horários disponíveis para a data e área selecionada
+    const [selectedDate, setSelectedDate] = useState(new Date());
+    const [availableSlots, setAvailableSlots] = useState([]);
     const [selectedSlot, setSelectedSlot] = useState(null);
 
-    // ESTADOS PARA O FORMULÁRIO DE CONFIRMAÇÃO
     const [showConfirmacaoModal, setShowConfirmacaoModal] = useState(false);
     const [reservationTitle, setReservationTitle] = useState('');
     const [reservationNotes, setReservationNotes] = useState('');
-    const [reservationEndTime, setReservationEndTime] = useState(''); // Estado para a hora de término calculada
+    const [reservationEndTime, setReservationEndTime] = useState('');
 
     useEffect(() => {
-        if (!userId) { // Redireciona se não houver usuário logado
+        if (!userId) {
             router.push('/login');
         } else {
             const { id } = router.query;
@@ -47,10 +45,10 @@ export default function AreasComuns() {
     }, [userId, router]);
 
     const fetchAreasComuns = useCallback(async () => {
-        if (!condominioID) return; // Só busca se tiver o ID do condomínio
+        if (!condominioID) return;
 
         setLoading(true);
-        setError(null); // Limpa erros anteriores
+        setError(null);
         try {
             const response = await fetch(`http://localhost:5000/api/condominios/${condominioID}/areas-comuns`); 
             
@@ -78,14 +76,14 @@ export default function AreasComuns() {
         }
     }, [condominioID, fetchAreasComuns]);
 
-    // LÓGICA PARA GERAÇÃO DE SLOTS DE HORÁRIO
-    const generateSlots = useCallback((date) => {
+    // LÓGICA PARA GERAÇÃO DE SLOTS DE HORÁRIO (AGORA SÓ GERA POTENCIAIS SLOTS)
+    const getPotentialSlots = useCallback((date) => {
         const slots = [];
         const startHour = 10;
-        const endHour = 22; // Horário de término das atividades
-        const interval = 3; // Horas
+        const endHour = 22; 
+        const interval = 3;
 
-        const dayOfWeek = date.getDay(); // 0 = Domingo, 6 = Sábado
+        const dayOfWeek = date.getDay();
         const isWeekend = (dayOfWeek === 0 || dayOfWeek === 6);
 
         const today = new Date();
@@ -112,30 +110,58 @@ export default function AreasComuns() {
         for (let hour = currentStartHour; hour < endHour; hour += interval) { 
             if (hour >= startHour) {
                 const formattedHour = String(hour).padStart(2, '0');
-                slots.push({ time: `${formattedHour}:00`, isAvailable: true });
+                slots.push({ time: `${formattedHour}:00`, isAvailable: true }); // isAvailable será atualizado pelo backend
             }
         }
         return slots;
     }, []);
 
+    // NOVO: Função para buscar a disponibilidade real dos slots do backend
+    const fetchSlotsAvailability = useCallback(async (areaId, date) => {
+        if (!areaId || !date) return [];
+
+        const formattedDate = date.toISOString().split('T')[0]; // Formato YYYY-MM-DD
+        try {
+            const response = await fetch(`http://localhost:5000/api/reservas/disponibilidade/${areaId}/${formattedDate}`);
+            if (response.ok) {
+                const data = await response.json();
+                return data.slots || []; // Retorna os slots com status de disponibilidade do backend
+            } else {
+                console.error('Erro ao buscar disponibilidade de slots:', response.statusText);
+                return [];
+            }
+        } catch (err) {
+            console.error('Erro de rede ao buscar disponibilidade de slots:', err);
+            return [];
+        }
+    }, []);
+
+
     // Função para abrir o modal de reserva
-    const handleReservarClick = (area) => {
+    const handleReservarClick = async (area) => { // AGORA É ASYNC
         setSelectedArea(area);
         const today = new Date();
         setSelectedDate(today); 
-        setAvailableSlots(generateSlots(today));
+        
+        // NOVO: Busca a disponibilidade real ao abrir o modal
+        const initialSlots = await fetchSlotsAvailability(area.id, today);
+        setAvailableSlots(initialSlots);
+
         setSelectedSlot(null);
         setShowReservaModal(true);
     };
 
     // Função para mudar o dia no calendário
-    const onCalendarChange = (date) => {
+    const onCalendarChange = async (date) => { // AGORA É ASYNC
         setSelectedDate(date);
-        setAvailableSlots(generateSlots(date));
+        
+        // NOVO: Busca a disponibilidade real ao mudar o dia no calendário
+        const updatedSlots = await fetchSlotsAvailability(selectedArea.id, date);
+        setAvailableSlots(updatedSlots);
+        
         setSelectedSlot(null);
     };
 
-    // Função para fechar o modal de disponibilidade
     const closeReservaModal = () => {
         setShowReservaModal(false);
         setSelectedArea(null);
@@ -144,7 +170,6 @@ export default function AreasComuns() {
         setSelectedSlot(null);
     };
 
-    // Função para abrir o formulário de confirmação
     const handleConfirmarReservaClick = () => {
         if (selectedSlot && selectedDate) {
             const [hours, minutes] = selectedSlot.time.split(':').map(Number);
@@ -153,12 +178,11 @@ export default function AreasComuns() {
 
             setReservationEndTime(endDate.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }));
             
-            setShowReservaModal(false); // Esconde o modal de disponibilidade
-            setShowConfirmacaoModal(true); // Exibe o modal de confirmação
+            setShowReservaModal(false);
+            setShowConfirmacaoModal(true);
         }
     };
 
-    // Função para fechar o formulário de confirmação
     const closeConfirmacaoModal = () => {
         setShowConfirmacaoModal(false);
         setReservationTitle('');
@@ -166,11 +190,10 @@ export default function AreasComuns() {
         setReservationEndTime('');
     };
 
-    // Lidar com a submissão do formulário de reserva para o backend
     const handleSubmitReserva = async (e) => {
         e.preventDefault();
 
-        if (!selectedArea || !selectedDate || !selectedSlot || !userId) {
+        if (!selectedArea || !selectedDate || !selectedSlot || !userId || !condominioID) {
             alert('Erro: Informações de reserva incompletas.');
             return;
         }
@@ -180,20 +203,21 @@ export default function AreasComuns() {
         dataInicioObj.setHours(hours, minutes, 0, 0);
 
         const dataFimObj = new Date(selectedDate);
-        dataFimObj.setHours(hours + 3, minutes, 0, 0); // Fim é 3h depois
+        dataFimObj.setHours(hours + 3, minutes, 0, 0);
 
         const reservaData = {
             areaId: selectedArea.id,
-            usuarioId: userId, // ID do usuário logado
-            dataInicio: dataInicioObj.toISOString(), // Formato ISO para o backend
-            dataFim: dataFimObj.toISOString(),       // Formato ISO para o backend
+            usuarioId: userId,
+            condominioId: condominioID,
+            dataInicio: dataInicioObj.toISOString(),
+            dataFim: dataFimObj.toISOString(),
             titulo: reservationTitle,
             observacoes: reservationNotes,
-            status: 0, // Status inicial como pendente (0)
+            status: '0', // Status inicial como pendente ('0')
         };
 
         try {
-            const response = await fetch('http://localhost:5000/api/reservas/criar', { // Chamada para a nova API
+            const response = await fetch('http://localhost:5000/api/reservas/criar', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -203,8 +227,8 @@ export default function AreasComuns() {
 
             if (response.ok) {
                 alert('Solicitação de reserva enviada com sucesso! Aguardando aprovação.');
-                closeConfirmacaoModal(); // Fecha o formulário
-                closeReservaModal(); // Fecha o modal de seleção também
+                closeConfirmacaoModal();
+                closeReservaModal();
                 fetchAreasComuns(); // Recarrega as áreas para talvez mostrar alguma mudança de status
             } else {
                 const errorData = await response.json();
@@ -217,8 +241,6 @@ export default function AreasComuns() {
         }
     };
 
-
-    // Lógica para desabilitar dias no calendário (dias de semana e dias passados)
     const tileDisabled = ({ date, view }) => {
         if (view === 'month') {
             const today = new Date();

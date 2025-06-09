@@ -120,10 +120,31 @@ export default function Condo() {
                         Áreas Comuns
                     </button>
 
+                    {/* NOVO BOTÃO: Minhas Reservas (visível apenas para Morador) */}
+                    {tipoUsuario === 'Morador' && (
+                        <button
+                            type="button"
+                            className="btn btn-info me-2 mb-2" // Cor "success" para diferenciar
+                            onClick={() => router.push(`/minhas-reservas?condominioId=${condominioID}`)}
+                        >
+                            Minhas Reservas
+                        </button>
+                    )}
+
+                    {tipoUsuario === 'Administrador' && (
+                        <button
+                            type="button"
+                            className="btn btn-info me-2 mb-2" // Cor "dark" para diferenciar
+                            onClick={() => router.push(`/gerenciar-reservas?id=${condominioID}`)}
+                        >
+                            Gerenciar Reservas
+                        </button>
+                    )}
+
                     {/* Botão de Avisos */}
                     <button
                         type="button"
-                        className="btn btn-secondary mb-2"
+                        className="btn btn-info mb-2"
                         onClick={() => router.push(`/avisos?id=${condominioID}`)}
                     >
                         Avisos
