@@ -11,6 +11,7 @@ export default function GerenciarReservas() {
     const userId = Cookies.get('userId'); 
     const tipoUsuario = Cookies.get('tipoUsuario'); 
     const [condominioID, setCondominioId] = useState(null);
+    const [condominioNome, setCondominioNome] = useState(''); // Estado para armazenar o nome do condomínio
     const [reservas, setReservas] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -35,6 +36,25 @@ export default function GerenciarReservas() {
             }
         }
     }, [userId, tipoUsuario, router]);
+
+    // Função para buscar o nome do condomínio
+    const fetchCondominioNome = useCallback(async () => {
+        if (!condominioID) return;
+        try {
+            const response = await fetch(`http://localhost:5000/api/condominios/${condominioID}`);
+            if (response.ok) {
+                const data = await response.json();
+                setCondominioNome(data.nome);
+            } else {
+                console.error('Erro ao buscar nome do condomínio:', response.statusText);
+                setCondominioNome('Condomínio Desconhecido'); // Fallback
+            }
+        } catch (error) {
+            console.error('Erro de rede ao buscar nome do condomínio:', error);
+            setCondominioNome('Erro ao Carregar Nome');
+        }
+    }, [condominioID]);
+
 
     const fetchAreasComunsParaFiltro = useCallback(async () => {
         if (!condominioID) return;
@@ -90,8 +110,9 @@ export default function GerenciarReservas() {
         if (condominioID) {
             fetchReservas();
             fetchAreasComunsParaFiltro();
+            fetchCondominioNome(); // Chama a função para buscar o nome
         }
-    }, [condominioID, fetchReservas, fetchAreasComunsParaFiltro]);
+    }, [condominioID, fetchReservas, fetchAreasComunsParaFiltro, fetchCondominioNome]);
 
     const alterarStatusReserva = async (reservaId, novoStatus) => {
         if (!confirm(`Tem certeza que deseja alterar o status da reserva ${reservaId} para ${novoStatus}?`)) {
@@ -134,11 +155,16 @@ export default function GerenciarReservas() {
     return (
         <>
             <Head>
-                <title>Gerenciar Reservas - Condomínio</title>
+                {/* NOVO: Título da página com o nome do condomínio */}
+                <title>{condominioNome ? `${condominioNome} - Gerenciar Reservas` : 'Gerenciar Reservas - Condomínio'}</title>
             </Head>
 
             <div className="container mt-5">
-                <h1 className="mb-4">Gerenciar Reservas {condominioID && `no Condomínio (${condominioID})`}</h1>
+                {/* NOVO: Título principal da página com o nome do condomínio */}
+                <h1 className="mb-4">
+                    {condominioNome ? `Gerenciar Reservas do Condomínio ${condominioNome}` : 'Gerenciar Reservas do Condomínio'}
+                    {/* REMOVIDO: {condominioID && !condominioNome && ` (ID: ${condominioID})`} */}
+                </h1>
 
                 <button
                     type="button"
@@ -192,9 +218,7 @@ export default function GerenciarReservas() {
                 {!loading && !error && reservas.length > 0 && (
                     <div className="row mt-4">
                         {reservas.map(reserva => (
-                            // Mantenha a div externa do map para a key
                             <div key={reserva.id} className="col-12 col-md-6 col-lg-4 mb-4">
-                                {/* O CARD em si */}
                                 <div className="card h-100 shadow-sm">
                                     <div className="card-body">
                                         <h5 className="card-title">Reserva: {reserva.titulo || 'Sem Título'}</h5>
@@ -208,11 +232,9 @@ export default function GerenciarReservas() {
                                             <strong>Usuário:</strong> {reserva.usuario ? reserva.usuario.nome : 'N/A'}
                                         </p>
                                         <p className="card-text">
-                                            {/* Formatação do horário em UTC usando toLocaleTimeString */}
                                             <strong>Início:</strong> {new Date(reserva.data_inicio).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' })} às {new Date(reserva.data_inicio).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'UTC' })}
                                         </p>
                                         <p className="card-text">
-                                            {/* Formatação do horário em UTC usando toLocaleTimeString */}
                                             <strong>Fim:</strong> {new Date(reserva.data_fim).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' })} às {new Date(reserva.data_fim).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'UTC' })}
                                         </p>
                                         <p className="card-text">

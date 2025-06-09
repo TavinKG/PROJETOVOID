@@ -6,16 +6,12 @@ import { useRouter } from 'next/router';
 import LogoutButton from '../components/LogoutButton';
 import Head from 'next/head';
 
-// Removido import de Calendar e seu CSS, pois não são usados diretamente nesta página
-// import Calendar from 'react-calendar';
-// import 'react-calendar/dist/Calendar.css';
-
-
 export default function Assembleias() {
     const router = useRouter();
     const userId = Cookies.get('userId');
     const tipoUsuario = Cookies.get('tipoUsuario');
     const [condominioID, setCondominioId] = useState(null);
+    const [condominioNome, setCondominioNome] = useState(''); // NOVO ESTADO: para armazenar o nome do condomínio
     const [assembleias, setAssembleias] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -48,6 +44,25 @@ export default function Assembleias() {
         }
     }, [userId, router]);
 
+    // NOVO: Função para buscar o nome do condomínio
+    const fetchCondominioNome = useCallback(async () => {
+        if (!condominioID) return;
+        try {
+            const response = await fetch(`http://localhost:5000/api/condominios/${condominioID}`);
+            if (response.ok) {
+                const data = await response.json();
+                setCondominioNome(data.nome);
+            } else {
+                console.error('Erro ao buscar nome do condomínio:', response.statusText);
+                setCondominioNome('Condomínio Desconhecido'); // Fallback
+            }
+        } catch (error) {
+            console.error('Erro de rede ao buscar nome do condomínio:', error);
+            setCondominioNome('Erro ao Carregar Nome');
+        }
+    }, [condominioID]);
+
+
     const fetchAssembleias = useCallback(async () => {
         if (!condominioID) return;
 
@@ -60,13 +75,7 @@ export default function Assembleias() {
 
             if (response.ok) {
                 const data = await response.json();
-                
-                // NOVO: Filtrar assembleias futuras APÓS a hidratação, ou com fuso horário consistente
-                // Para evitar hydration errors, fazemos a data de comparação uma vez ao carregar.
-                // OU, uma abordagem mais simples para hydration: não filtrar por `now` aqui no cliente.
-                // Deixe o backend mandar tudo e filtre no backend se precisar.
-                // Por enquanto, vamos manter a lógica de filtro de "futuras" aqui, mas simplificar a comparação.
-                const now = new Date(); // Criada uma única vez para este render/ciclo de vida do useEffect
+                const now = new Date(); 
                 
                 const futurasAssembleias = data.assembleias ? 
                     data.assembleias.filter(a => new Date(a.data_hora).getTime() >= now.getTime()) : [];
@@ -115,8 +124,9 @@ export default function Assembleias() {
     useEffect(() => {
         if (condominioID) {
             fetchAssembleias();
+            fetchCondominioNome(); // NOVO: Chama a função para buscar o nome
         }
-    }, [condominioID, fetchAssembleias]);
+    }, [condominioID, fetchAssembleias, fetchCondominioNome]); // Adiciona fetchCondominioNome às dependências
 
     const handleAgendarAssembleia = async (e) => {
         e.preventDefault();
@@ -125,21 +135,19 @@ export default function Assembleias() {
             return;
         }
 
-        // Criar data/hora para envio SEMPRE EM UTC
         const dataHora = new Date(`${assembleiaDate}T${assembleiaTime}:00.000Z`); 
-        
-        // Validação de data no passado - compare com UTC now
-        const nowUTC = new Date(); // Objeto Date atual no fuso horário local
-        const agendamentoUTC = new Date(assembleiaDate + 'T' + assembleiaTime + ':00.000Z'); // Data agendada em UTC
+        const now = new Date();
+        now.setSeconds(0, 0); 
+        const agendamentoUTC = new Date(assembleiaDate + 'T' + assembleiaTime + ':00.000Z');
 
-        if (isNaN(dataHora.getTime()) || agendamentoUTC.getTime() < nowUTC.getTime()) { // Compara os timestamps em UTC
+        if (isNaN(dataHora.getTime()) || agendamentoUTC < now) {
             alert('Data e hora da assembleia inválidas ou no passado. Agende para um horário futuro.');
             return;
         }
 
         const assembleiaData = {
             titulo: assembleiaTitle,
-            data_hora: dataHora.toISOString(), // Envia em formato ISO (UTC)
+            data_hora: dataHora.toISOString(),
             descricao: assembleiaDescription,
             condominio_id: condominioID,
             criador_id: userId,
@@ -159,7 +167,7 @@ export default function Assembleias() {
                 setAssembleiaDate('');
                 setAssembleiaTime('');
                 setAssembleiaDescription('');
-                fetchAssembleias(); // Recarrega a lista
+                fetchAssembleias();
             } else {
                 const errorData = await response.json();
                 console.error('Erro ao agendar assembleia:', errorData.message || response.statusText);
@@ -184,7 +192,7 @@ export default function Assembleias() {
 
             if (response.ok) {
                 alert('Presença confirmada com sucesso!');
-                fetchAssembleias(); // Recarrega a lista para atualizar a visualização (incluindo o status da presença)
+                fetchAssembleias();
             } else {
                 const errorData = await response.json();
                 console.error('Erro ao confirmar presença:', errorData.message || response.statusText);
@@ -210,11 +218,9 @@ export default function Assembleias() {
     };
 
     // Função para formatar data e hora para exibição (em UTC)
-    // Usada por ambas as renderizações (SSR e Cliente) e garante consistência
     const formatDateTime = (isoString) => {
         if (!isoString) return 'N/A';
         const date = new Date(isoString);
-        // Garante que a formatação seja sempre em UTC, independentemente do fuso horário do servidor/cliente
         return date.toLocaleDateString('pt-BR', {
             day: '2-digit', month: '2-digit', year: 'numeric', timeZone: 'UTC'
         }) + ' às ' + date.toLocaleTimeString('pt-BR', {
@@ -225,11 +231,16 @@ export default function Assembleias() {
     return (
         <>
             <Head>
-                <title>Assembleias - Condomínio</title>
+                {/* Título da página com o nome do condomínio */}
+                <title>{condominioNome ? `${condominioNome} - Assembleias` : 'Assembleias - Condomínio'}</title>
             </Head>
 
             <div className="container mt-5">
-                <h1 className="mb-4">Assembleias {condominioID && `no Condomínio (${condominioID})`}</h1>
+                {/* Título principal da página com o nome do condomínio */}
+                <h1 className="mb-4">
+                    Assembleias {condominioNome ? `do Condomínio ${condominioNome}` : 'do Condomínio'}
+                    {/* REMOVIDO: {condominioID && !condominioNome && ` (ID: ${condominioID})`} */}
+                </h1>
 
                 {/* Botões de Ação */}
                 <div className="d-flex flex-wrap align-items-center mb-4">
@@ -304,7 +315,6 @@ export default function Assembleias() {
                                                 >
                                                     Ver Participantes
                                                 </button>
-                                                {/* Botões de Editar e Excluir foram removidos */}
                                             </div>
                                         )}
                                     </div>

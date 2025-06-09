@@ -10,6 +10,7 @@ export default function MinhasReservas() {
     const router = useRouter();
     const userId = Cookies.get('userId'); 
     const [condominioID, setCondominioId] = useState(null);
+    const [condominioNome, setCondominioNome] = useState(''); // NOVO ESTADO: para armazenar o nome do condomínio
     const [minhasReservas, setMinhasReservas] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -29,6 +30,25 @@ export default function MinhasReservas() {
             }
         }
     }, [userId, router]);
+
+    // NOVO: Função para buscar o nome do condomínio
+    const fetchCondominioNome = useCallback(async () => {
+        if (!condominioID) return;
+        try {
+            const response = await fetch(`http://localhost:5000/api/condominios/${condominioID}`);
+            if (response.ok) {
+                const data = await response.json();
+                setCondominioNome(data.nome); // Assume que a API retorna um objeto com a propriedade 'nome'
+            } else {
+                console.error('Erro ao buscar nome do condomínio:', response.statusText);
+                setCondominioNome('Condomínio Desconhecido'); // Fallback
+            }
+        } catch (error) {
+            console.error('Erro de rede ao buscar nome do condomínio:', error);
+            setCondominioNome('Erro ao Carregar Nome');
+        }
+    }, [condominioID]);
+
 
     const fetchMinhasReservas = useCallback(async () => {
         if (!userId || !condominioID) return; // Só busca se tiver ambos os IDs
@@ -59,8 +79,9 @@ export default function MinhasReservas() {
     useEffect(() => {
         if (userId && condominioID) {
             fetchMinhasReservas();
+            fetchCondominioNome(); // NOVO: Chama a função para buscar o nome
         }
-    }, [userId, condominioID, fetchMinhasReservas]);
+    }, [userId, condominioID, fetchMinhasReservas, fetchCondominioNome]); // Adiciona fetchCondominioNome às dependências
 
     // Função para formatar o status da reserva
     const formatStatus = (status) => {
@@ -76,11 +97,16 @@ export default function MinhasReservas() {
     return (
         <>
             <Head>
-                <title>Minhas Reservas - Condomínio</title>
+                {/* Título da página com o nome do condomínio */}
+                <title>{condominioNome ? `${condominioNome} - Minhas Reservas` : 'Minhas Reservas - Condomínio'}</title>
             </Head>
 
             <div className="container mt-5">
-                <h1 className="mb-4">Minhas Reservas {condominioID && `no Condomínio (${condominioID})`}</h1>
+                {/* Título principal da página com o nome do condomínio */}
+                <h1 className="mb-4">
+                    Minhas Reservas {condominioNome ? `no Condomínio ${condominioNome}` : 'no Condomínio'}
+                    {/* Removido ` (ID: ${condominioID})` */}
+                </h1>
 
                 {/* Botão de Voltar para o Condomínio */}
                 <button
@@ -114,8 +140,18 @@ export default function MinhasReservas() {
                             });
 
                             // Formatar o horário para HH:MM em UTC (para evitar deslocamento de fuso horário local)
-                            const horarioInicioFormatado = dataInicioUTC.getUTCHours().toString().padStart(2, '0') + ':' + dataInicioUTC.getUTCMinutes().toString().padStart(2, '0');
-                            const horarioFimFormatado = dataFimUTC.getUTCHours().toString().padStart(2, '0') + ':' + dataFimUTC.getUTCMinutes().toString().padStart(2, '0');
+                            const horarioInicioFormatado = dataInicioUTC.toLocaleTimeString('pt-BR', {
+                                hour: '2-digit',
+                                minute: '2-digit',
+                                hour12: false,
+                                timeZone: 'UTC'
+                            });
+                            const horarioFimFormatado = dataFimUTC.toLocaleTimeString('pt-BR', {
+                                hour: '2-digit',
+                                minute: '2-digit',
+                                hour12: false,
+                                timeZone: 'UTC'
+                            });
 
                             return (
                                 <div key={reserva.id} className="col-12 col-md-6 col-lg-4 mb-4">
@@ -137,7 +173,6 @@ export default function MinhasReservas() {
                                             <p className="card-text">
                                                 <strong>Observações:</strong> {reserva.observacoes || 'N/A'}
                                             </p>
-                                            {/* Você pode adicionar um botão de cancelar aqui futuramente */}
                                         </div>
                                     </div>
                                 </div>

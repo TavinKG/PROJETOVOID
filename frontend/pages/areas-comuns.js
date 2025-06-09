@@ -14,6 +14,7 @@ export default function AreasComuns() {
     const router = useRouter();
     const userId = Cookies.get('userId'); 
     const [condominioID, setCondominioId] = useState(null);
+    const [condominioNome, setCondominioNome] = useState(''); // Estado para o nome do condomínio
     const [areasComuns, setAreasComuns] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -44,6 +45,25 @@ export default function AreasComuns() {
         }
     }, [userId, router]);
 
+    // Função para buscar o nome do condomínio
+    const fetchCondominioNome = useCallback(async () => {
+        if (!condominioID) return;
+        try {
+            const response = await fetch(`http://localhost:5000/api/condominios/${condominioID}`);
+            if (response.ok) {
+                const data = await response.json();
+                setCondominioNome(data.nome);
+            } else {
+                console.error('Erro ao buscar nome do condomínio:', response.statusText);
+                setCondominioNome('Condomínio Desconhecido'); // Fallback
+            }
+        } catch (error) {
+            console.error('Erro de rede ao buscar nome do condomínio:', error);
+            setCondominioNome('Erro ao Carregar Nome');
+        }
+    }, [condominioID]);
+
+
     const fetchAreasComuns = useCallback(async () => {
         if (!condominioID) return;
 
@@ -73,8 +93,10 @@ export default function AreasComuns() {
     useEffect(() => {
         if (condominioID) {
             fetchAreasComuns();
+            fetchCondominioNome(); // Chama a função para buscar o nome
         }
-    }, [condominioID, fetchAreasComuns]);
+    }, [condominioID, fetchAreasComuns, fetchCondominioNome]);
+
 
     const getPotentialSlots = useCallback((date) => {
         const slots = [];
@@ -166,11 +188,10 @@ export default function AreasComuns() {
 
     const handleConfirmarReservaClick = () => {
         if (selectedSlot && selectedDate) {
-            // CORREÇÃO AQUI: CALCULA END TIME USANDO setUTCHours para consistência
             const [hours, minutes] = selectedSlot.time.split(':').map(Number);
             const endDate = new Date(selectedDate);
-            endDate.setUTCHours(hours + 3, minutes, 0, 0); // Define a hora de término em UTC
-            // Formata para exibição local
+            endDate.setUTCHours(hours + 3, minutes, 0, 0); 
+
             setReservationEndTime(endDate.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }));
             
             setShowReservaModal(false);
@@ -185,7 +206,6 @@ export default function AreasComuns() {
         setReservationEndTime('');
     };
 
-    // CORREÇÃO PRINCIPAL: handleSubmitReserva agora cria datas em UTC
     const handleSubmitReserva = async (e) => {
         e.preventDefault();
 
@@ -196,23 +216,21 @@ export default function AreasComuns() {
 
         const [hours, minutes] = selectedSlot.time.split(':').map(Number);
         
-        // NOVO: Criar data de início em UTC
         const dataInicioObj = new Date(selectedDate);
-        dataInicioObj.setUTCHours(hours, minutes, 0, 0); // Define a hora em UTC
+        dataInicioObj.setUTCHours(hours, minutes, 0, 0);
 
-        // NOVO: Criar data de fim em UTC
         const dataFimObj = new Date(selectedDate);
-        dataFimObj.setUTCHours(hours + 3, minutes, 0, 0); // Define a hora em UTC (3h depois)
+        dataFimObj.setUTCHours(hours + 3, minutes, 0, 0);
 
         const reservaData = {
             areaId: selectedArea.id,
             usuarioId: userId,
             condominioId: condominioID,
-            dataInicio: dataInicioObj.toISOString(), // Envia em formato ISO (que é UTC)
-            dataFim: dataFimObj.toISOString(),       // Envia em formato ISO (que é UTC)
+            dataInicio: dataInicioObj.toISOString(),
+            dataFim: dataFimObj.toISOString(),
             titulo: reservationTitle,
             observacoes: reservationNotes,
-            status: '0', // Status inicial como pendente ('0')
+            status: '0', 
         };
 
         try {
@@ -228,7 +246,7 @@ export default function AreasComuns() {
                 alert('Solicitação de reserva enviada com sucesso! Aguardando aprovação.');
                 closeConfirmacaoModal();
                 closeReservaModal();
-                fetchAreasComuns(); // Recarrega as áreas para talvez mostrar alguma mudança de status
+                fetchAreasComuns();
             } else {
                 const errorData = await response.json();
                 console.error('Erro ao enviar reserva:', errorData);
@@ -258,11 +276,16 @@ export default function AreasComuns() {
     return (
         <>
             <Head>
-                <title>Áreas Comuns - Condomínio</title>
+                {/* Título da página com o nome do condomínio */}
+                <title>{condominioNome ? `${condominioNome} - Áreas Comuns` : 'Áreas Comuns - Condomínio'}</title>
             </Head>
 
             <div className="container mt-5">
-                <h1 className="mb-4">Áreas Comuns do Condomínio {condominioID && `(${condominioID})`}</h1>
+                {/* Título principal da página com o nome do condomínio */}
+                <h1 className="mb-4">
+                    {condominioNome ? `Áreas Comuns do Condomínio ${condominioNome}` : 'Áreas Comuns do Condomínio'}
+                    {/* Removido ` (ID: ${condominioID})` */}
+                </h1>
 
                 <button
                     type="button"

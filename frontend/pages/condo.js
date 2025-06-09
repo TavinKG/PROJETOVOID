@@ -110,8 +110,7 @@ export default function Condo() {
             <div className="container mt-5">
                 {/* NOVO: Título principal da página com o nome do condomínio */}
                 <h1 className="mb-4">
-                    {condominioNome ? `Condomínio ${condominioNome}` : 'Página do Condomínio'}
-                    {condominioID && !condominioNome && ` (ID: ${condominioID})`} {/* Exibe ID se nome não estiver carregado */}
+                    {condominioNome ? `Condomínio ${condominioNome}` : 'Condomínio'}
                 </h1>
 
                 {/* Container para os botões de ação */}

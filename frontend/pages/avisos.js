@@ -1,3 +1,4 @@
+// pages/avisos.js
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { useEffect, useState, useCallback } from 'react';
 import Cookies from 'js-cookie';
@@ -9,6 +10,7 @@ export default function Avisos() {
     const router = useRouter();
     const userId = Cookies.get('userId');
     const [condominioID, setCondominioId] = useState(null);
+    const [condominioNome, setCondominioNome] = useState(''); // NOVO ESTADO: para armazenar o nome do condomínio
     const [modalOpen, setModalOpen] = useState(false);
     const [titulo, setTitulo] = useState('');
     const [mensagem, setMensagem] = useState('');
@@ -23,6 +25,25 @@ export default function Avisos() {
             setTipoUsuario(Cookies.get('tipoUsuario'));
         }
     }, [tipoUsuario, userId, router]);
+
+    // NOVO: Função para buscar o nome do condomínio
+    const fetchCondominioNome = useCallback(async () => {
+        if (!condominioID) return;
+        try {
+            const response = await fetch(`http://localhost:5000/api/condominios/${condominioID}`);
+            if (response.ok) {
+                const data = await response.json();
+                setCondominioNome(data.nome); // Assume que a API retorna um objeto com a propriedade 'nome'
+            } else {
+                console.error('Erro ao buscar nome do condomínio:', response.statusText);
+                setCondominioNome('Condomínio Desconhecido'); // Fallback
+            }
+        } catch (error) {
+            console.error('Erro de rede ao buscar nome do condomínio:', error);
+            setCondominioNome('Erro ao Carregar Nome');
+        }
+    }, [condominioID]);
+
 
     const fetchListaAvisos = useCallback(async () => {
         if (!condominioID) return;
@@ -45,8 +66,9 @@ export default function Avisos() {
     useEffect(() => {
         if (condominioID) {
             fetchListaAvisos();
+            fetchCondominioNome(); // NOVO: Chama a função para buscar o nome
         }
-    }, [condominioID, fetchListaAvisos]);
+    }, [condominioID, fetchListaAvisos, fetchCondominioNome]); // Adiciona fetchCondominioNome às dependências
 
     const criarAviso = async () => {
         const avisoData = {
@@ -87,17 +109,22 @@ export default function Avisos() {
     return (
         <>
             <Head>
-                <title>Avisos - Condomínio</title>
+                {/* Título da página com o nome do condomínio */}
+                <title>{condominioNome ? `${condominioNome} - Avisos` : 'Avisos - Condomínio'}</title>
             </Head>
 
             <div className="container mt-5">
-                <h1 className="mb-4">Avisos do Condomínio</h1>
+                {/* Título principal da página com o nome do condomínio */}
+                <h1 className="mb-4">
+                    Avisos do Condomínio {condominioNome ? `${condominioNome}` : ''}
+                    {/* Removido ` (ID: ${condominioID})` */}
+                </h1>
 
                 {/* Botão de Voltar */}
                 <button
                     type="button"
-                    className="btn btn-secondary mb-3 me-2" // Adicionado margem direita
-                    onClick={() => router.back()} // Volta para a página anterior
+                    className="btn btn-secondary mb-3 me-2"
+                    onClick={() => router.back()}
                 >
                     Voltar
                 </button>
@@ -105,7 +132,7 @@ export default function Avisos() {
                 {tipoUsuario === 'Administrador' && (
                     <button
                         type="button"
-                        className="btn btn-success mb-3" // Ajustado margem
+                        className="btn btn-success mb-3"
                         onClick={() => setModalOpen(true)}
                     >
                         Criar Aviso
