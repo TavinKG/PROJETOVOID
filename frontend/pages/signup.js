@@ -104,7 +104,7 @@ export default function Signup() {
       <div className="d-flex flex-column align-items-center justify-content-center min-vh-100 bg-light">
         <div className="card shadow p-4 w-100" style={{ maxWidth: '600px' }}>
           <div className="text-center mb-4">
-            <img src="/logos/logo-header1.png" alt="VOID Logo" className="mb-4" style={{ height: '80px' }} />
+            <img src="/logos/logo-header1.png" alt="VOID Logo" className="mb-4" style={{ height: '50px' }} />
             <h2 className="mb-0">Cadastro</h2>
           </div>
 

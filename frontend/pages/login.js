@@ -58,7 +58,7 @@ export default function Login() {
       <div className="d-flex flex-column align-items-center justify-content-center min-vh-100 bg-light">
         <div className="card shadow p-4 w-100" style={{ maxWidth: '450px' }}> {/* Levemente reduzido o maxWidth para um card de login mais focado */}
           <div className="text-center mb-4">
-            <img src="/logos/logo-header1.png" alt="VOID Logo" className="mb-4" style={{ height: '80px' }} />
+            <img src="/logos/logo-header1.png" alt="VOID Logo" className="mb-4" style={{ height: '50px' }} />
             <h2 className="mb-0">Login</h2>
           </div>
           <form onSubmit={handleLogin}>
