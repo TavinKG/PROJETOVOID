@@ -19,7 +19,7 @@ export default function GerenciarReservas() {
     const [filterAreaId, setFilterAreaId] = useState('');
     const [filterStatus, setFilterStatus] = useState('');
     const [filterDate, setFilterDate] = useState('');
-    const [areasComunsCondominio, setAreasComunsCondominio] = useState([]); // NOVO: Para popular o filtro de áreas
+    const [areasComunsCondominio, setAreasComunsCondominio] = useState([]);
 
     useEffect(() => {
         if (!userId || tipoUsuario !== 'Administrador') {
@@ -36,7 +36,6 @@ export default function GerenciarReservas() {
         }
     }, [userId, tipoUsuario, router]);
 
-    // NOVO: Função para buscar as áreas comuns para o filtro de área
     const fetchAreasComunsParaFiltro = useCallback(async () => {
         if (!condominioID) return;
         try {
@@ -58,14 +57,13 @@ export default function GerenciarReservas() {
         setLoading(true);
         setError(null);
 
-        // Constrói a query string com os filtros
         const queryParams = new URLSearchParams();
         if (filterAreaId) queryParams.append('areaId', filterAreaId);
-        if (filterStatus !== '') queryParams.append('status', filterStatus); // Status '0' é válido
-        if (filterDate) queryParams.append('date', filterDate); // Formato YYYY-MM-DD
+        if (filterStatus !== '') queryParams.append('status', filterStatus);
+        if (filterDate) queryParams.append('date', filterDate);
 
         const queryString = queryParams.toString();
-        const url = `http://localhost:5000/api/reservas/condominio/${condominioID}${queryString ? `?${queryString}` : ''}`;
+        const url = `http://localhost:5000/api/reservas/condominio/${condominioID}${queryString ? `?${queryString}` : ''}`; 
 
         try {
             const response = await fetch(url);
@@ -86,14 +84,14 @@ export default function GerenciarReservas() {
         } finally {
             setLoading(false);
         }
-    }, [condominioID, filterAreaId, filterStatus, filterDate]); // Dependências dos filtros
+    }, [condominioID, filterAreaId, filterStatus, filterDate]);
 
     useEffect(() => {
         if (condominioID) {
-            fetchReservas(); // Busca reservas quando o ID do condomínio ou filtros mudam
-            fetchAreasComunsParaFiltro(); // Busca áreas comuns para popular o filtro
+            fetchReservas();
+            fetchAreasComunsParaFiltro();
         }
-    }, [condominioID, fetchReservas, fetchAreasComunsParaFiltro]); // Adicionadas dependências
+    }, [condominioID, fetchReservas, fetchAreasComunsParaFiltro]);
 
     const alterarStatusReserva = async (reservaId, novoStatus) => {
         if (!confirm(`Tem certeza que deseja alterar o status da reserva ${reservaId} para ${novoStatus}?`)) {
@@ -111,7 +109,7 @@ export default function GerenciarReservas() {
 
             if (response.ok) {
                 alert('Status da reserva atualizado com sucesso!');
-                fetchReservas(); // Recarrega a lista para mostrar o status atualizado
+                fetchReservas();
             } else {
                 const errorData = await response.json();
                 console.error('Erro ao alterar status da reserva:', errorData.message || response.statusText);
@@ -160,7 +158,6 @@ export default function GerenciarReservas() {
                             <label htmlFor="filterArea" className="form-label">Área</label>
                             <select id="filterArea" className="form-select" value={filterAreaId} onChange={(e) => setFilterAreaId(e.target.value)}>
                                 <option value="">Todas as Áreas</option>
-                                {/* Popula as opções de área comum */}
                                 {areasComunsCondominio.map(area => (
                                     <option key={area.id} value={area.id}>{area.nome}</option>
                                 ))}
@@ -181,8 +178,6 @@ export default function GerenciarReservas() {
                             <input type="date" id="filterDate" className="form-control" value={filterDate} onChange={(e) => setFilterDate(e.target.value)} />
                         </div>
                     </div>
-                    {/* O botão "Aplicar Filtros" é removido, pois a busca é automática ao mudar os filtros */}
-                    {/* <button className="btn btn-primary mt-3">Aplicar Filtros</button> */}
                 </div>
 
                 {/* Mensagens de Carregamento/Erro/Vazio */}
@@ -197,7 +192,9 @@ export default function GerenciarReservas() {
                 {!loading && !error && reservas.length > 0 && (
                     <div className="row mt-4">
                         {reservas.map(reserva => (
+                            // Mantenha a div externa do map para a key
                             <div key={reserva.id} className="col-12 col-md-6 col-lg-4 mb-4">
+                                {/* O CARD em si */}
                                 <div className="card h-100 shadow-sm">
                                     <div className="card-body">
                                         <h5 className="card-title">Reserva: {reserva.titulo || 'Sem Título'}</h5>
@@ -208,13 +205,15 @@ export default function GerenciarReservas() {
                                             <strong>Área:</strong> {reserva.areas_comuns ? reserva.areas_comuns.nome : 'N/A'}
                                         </p>
                                         <p className="card-text">
-                                            <strong>Usuário:</strong> {reserva.usuario ? reserva.usuario.nome : 'N/A'} (ID: {reserva.usuario_id})
+                                            <strong>Usuário:</strong> {reserva.usuario ? reserva.usuario.nome : 'N/A'}
                                         </p>
                                         <p className="card-text">
-                                            <strong>Início:</strong> {new Date(reserva.data_inicio).toLocaleString('pt-BR')}
+                                            {/* Formatação do horário em UTC usando toLocaleTimeString */}
+                                            <strong>Início:</strong> {new Date(reserva.data_inicio).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' })} às {new Date(reserva.data_inicio).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'UTC' })}
                                         </p>
                                         <p className="card-text">
-                                            <strong>Fim:</strong> {new Date(reserva.data_fim).toLocaleString('pt-BR')}
+                                            {/* Formatação do horário em UTC usando toLocaleTimeString */}
+                                            <strong>Fim:</strong> {new Date(reserva.data_fim).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' })} às {new Date(reserva.data_fim).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'UTC' })}
                                         </p>
                                         <p className="card-text">
                                             <strong>Status:</strong> {formatStatus(reserva.status)}
@@ -223,19 +222,18 @@ export default function GerenciarReservas() {
                                             <strong>Observações:</strong> {reserva.observacoes || 'N/A'}
                                         </p>
 
-                                        {/* Ações do Administrador */}
                                         <div className="mt-3 d-flex flex-wrap gap-2">
                                             {reserva.status === '0' && (
                                                 <>
                                                     <button 
                                                         className="btn btn-success btn-sm"
-                                                        onClick={() => alterarStatusReserva(reserva.id, '1')} // Aprovar
+                                                        onClick={() => alterarStatusReserva(reserva.id, '1')}
                                                     >
                                                         Aprovar
                                                     </button>
                                                     <button 
                                                         className="btn btn-danger btn-sm"
-                                                        onClick={() => alterarStatusReserva(reserva.id, '2')} // Recusar
+                                                        onClick={() => alterarStatusReserva(reserva.id, '2')}
                                                     >
                                                         Recusar
                                                     </button>
@@ -244,7 +242,7 @@ export default function GerenciarReservas() {
                                             {reserva.status !== '5' && (
                                                 <button 
                                                     className="btn btn-warning btn-sm text-dark"
-                                                    onClick={() => alterarStatusReserva(reserva.id, '5')} // Cancelar
+                                                    onClick={() => alterarStatusReserva(reserva.id, '5')}
                                                 >
                                                     Cancelar
                                                 </button>

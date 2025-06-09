@@ -6,18 +6,25 @@ const Reserva = require('../models/Reserva');
 class ReservaController {
 
     static async criarReserva(req, res) {
-        const { areaId, usuarioId, dataInicio, dataFim, titulo, observacoes, condominioId } = req.body; // NOVO: Adicionado condominioId
+        const { areaId, usuarioId, dataInicio, dataFim, titulo, observacoes, condominioId } = req.body;
 
-        // Validações básicas
-        if (!areaId || !usuarioId || !dataInicio || !dataFim || !condominioId) { // NOVO: Validação de condominioId
+        if (!areaId || !usuarioId || !dataInicio || !dataFim || !condominioId) {
             return res.status(400).json({ message: 'Dados mínimos da reserva incompletos (areaId, usuarioId, dataInicio, dataFim, condominioId são obrigatórios).' });
         }
 
-        const statusInicial = 0; // Status inicial como 'pendente' (0)
+        const statusInicial = '0'; // Status inicial como '0' (pendente)
 
         try {
+            // --- NOVO: Lógica de Verificação de Conflito ---
+            const conflitingReservas = await ReservaDAO.buscarReservasConflitantes(areaId, dataInicio, dataFim);
+
+            if (conflitingReservas && conflitingReservas.length > 0) {
+                // Se encontrou alguma reserva pendente ou aprovada que se sobrepõe
+                return res.status(409).json({ message: 'Conflito de horário: Esta área já está reservada ou solicitada para o período selecionado.' });
+            }
+
             const novaReserva = new Reserva(
-                null, // ID será gerado pelo banco
+                null,
                 areaId,
                 usuarioId,
                 dataInicio,
@@ -25,7 +32,7 @@ class ReservaController {
                 statusInicial,
                 titulo,
                 observacoes,
-                condominioId // NOVO: Passando condominioId para o modelo
+                condominioId
             );
 
             const reservaCriada = await ReservaDAO.criarReserva(novaReserva);
@@ -122,29 +129,35 @@ class ReservaController {
             const endHour = 22;
             const interval = 3;
 
-            // Gerar todos os slots possíveis para o dia
+            // Iterar sobre os horários potenciais
             for (let hour = startHour; hour < endHour; hour += interval) {
                 const formattedHour = String(hour).padStart(2, '0');
-                const slotStartTime = new Date(`${date}T${formattedHour}:00:00.000Z`); // Em UTC para comparação
-                const slotEndTime = new Date(slotStartTime);
-                slotEndTime.setHours(slotEndTime.getHours() + interval); // Fim do slot
+                const slotTimeStr = `${formattedHour}:00`;
+
+                // Construir o objeto Date para o início e fim do SLOT
+                // É CRUCIAL USAR O MESMO FORMATO DE DATA (UTC ou LOCAL) QUE VOCÊ SALVA NO BANCO PARA COMPARAÇÃO
+                // Se você salva com toISOString() (que é UTC), compare com UTC.
+                const slotStart = new Date(`${date}T${slotTimeStr}:00.000Z`); // Início do slot
+                const slotEnd = new Date(slotStart.getTime() + interval * 60 * 60 * 1000); // Fim do slot (adiciona intervalo em ms)
 
                 let isAvailable = true;
 
                 // Verificar se este slot se sobrepõe a alguma reserva existente
                 for (const reserva of existingReservas) {
-                    const reservaStart = new Date(reserva.data_inicio);
-                    const reservaEnd = new Date(reserva.data_fim);
+                    const reservaStart = new Date(reserva.data_inicio); // Data de início da reserva existente
+                    const reservaEnd = new Date(reserva.data_fim);     // Data de fim da reserva existente
 
-                    // Verifica se há sobreposição
+                    // LÓGICA DE SOBREPOSIÇÃO ATUALIZADA E EXPLICITADA
+                    // Uma sobreposição ocorre se:
+                    // (Slot começa antes do fim da reserva EXISTENTE E Slot termina depois do início da reserva EXISTENTE)
                     if (
-                        (slotStartTime < reservaEnd && slotEndTime > reservaStart)
+                        (slotStart.getTime() < reservaEnd.getTime() && slotEnd.getTime() > reservaStart.getTime())
                     ) {
-                        isAvailable = false; // Slot está ocupado
+                        isAvailable = false; // O slot está ocupado
                         break; // Se encontrou uma sobreposição, não precisa verificar mais
                     }
                 }
-                allSlots.push({ time: `${formattedHour}:00`, isAvailable: isAvailable });
+                allSlots.push({ time: slotTimeStr, isAvailable: isAvailable });
             }
 
             res.status(200).json({ message: 'Disponibilidade verificada com sucesso!', date: date, slots: allSlots });

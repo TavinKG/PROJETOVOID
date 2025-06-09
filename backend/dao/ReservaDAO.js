@@ -157,6 +157,35 @@ class ReservaDAO {
             throw new Error('Erro ao buscar reservas por área e data.');
         }
     }
+
+    static async buscarReservasConflitantes(areaId, dataInicio, dataFim) {
+        try {
+            // Converte as datas para o formato ISO string (UTC) para garantir comparação correta no banco
+            const startISO = new Date(dataInicio).toISOString();
+            const endISO = new Date(dataFim).toISOString();
+
+            const { data, error } = await supabase
+                .from('reservas')
+                .select('id, data_inicio, data_fim, status') // Seleciona apenas o que é necessário para verificar conflito
+                .eq('area_id', areaId)
+                .in('status', ['0', '1']) // Filtra por status '0' (pendente) ou '1' (aprovada)
+                // Verifica sobreposição de intervalos:
+                // (startA < endB) AND (endA > startB)
+                .lt('data_inicio', endISO)  // A nova reserva começa ANTES da reserva existente terminar
+                .gt('data_fim', startISO);  // A nova reserva termina DEPOIS da reserva existente começar
+            
+            if (error) {
+                console.error('Erro Supabase ao buscar reservas conflitantes:', error);
+                throw new Error(`Erro ao buscar reservas conflitantes: ${error.message}`);
+            }
+
+            return data; // Retorna as reservas que se sobrepõem
+        } catch (error) {
+            console.error('Erro na DAO ao buscar reservas conflitantes:', error);
+            throw new Error('Erro ao buscar reservas conflitantes.');
+        }
+    }
+
 }
 
 module.exports = ReservaDAO;

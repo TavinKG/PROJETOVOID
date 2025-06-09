@@ -76,7 +76,6 @@ export default function AreasComuns() {
         }
     }, [condominioID, fetchAreasComuns]);
 
-    // LÓGICA PARA GERAÇÃO DE SLOTS DE HORÁRIO (AGORA SÓ GERA POTENCIAIS SLOTS)
     const getPotentialSlots = useCallback((date) => {
         const slots = [];
         const startHour = 10;
@@ -110,22 +109,21 @@ export default function AreasComuns() {
         for (let hour = currentStartHour; hour < endHour; hour += interval) { 
             if (hour >= startHour) {
                 const formattedHour = String(hour).padStart(2, '0');
-                slots.push({ time: `${formattedHour}:00`, isAvailable: true }); // isAvailable será atualizado pelo backend
+                slots.push({ time: `${formattedHour}:00`, isAvailable: false });
             }
         }
         return slots;
     }, []);
 
-    // NOVO: Função para buscar a disponibilidade real dos slots do backend
     const fetchSlotsAvailability = useCallback(async (areaId, date) => {
         if (!areaId || !date) return [];
 
-        const formattedDate = date.toISOString().split('T')[0]; // Formato YYYY-MM-DD
+        const formattedDate = date.toISOString().split('T')[0]; 
         try {
             const response = await fetch(`http://localhost:5000/api/reservas/disponibilidade/${areaId}/${formattedDate}`);
             if (response.ok) {
                 const data = await response.json();
-                return data.slots || []; // Retorna os slots com status de disponibilidade do backend
+                return data.slots || [];
             } else {
                 console.error('Erro ao buscar disponibilidade de slots:', response.statusText);
                 return [];
@@ -137,27 +135,23 @@ export default function AreasComuns() {
     }, []);
 
 
-    // Função para abrir o modal de reserva
-    const handleReservarClick = async (area) => { // AGORA É ASYNC
+    const handleReservarClick = async (area) => {
         setSelectedArea(area);
         const today = new Date();
         setSelectedDate(today); 
         
-        // NOVO: Busca a disponibilidade real ao abrir o modal
-        const initialSlots = await fetchSlotsAvailability(area.id, today);
-        setAvailableSlots(initialSlots);
+        const fetchedSlots = await fetchSlotsAvailability(area.id, today);
+        setAvailableSlots(fetchedSlots);
 
         setSelectedSlot(null);
         setShowReservaModal(true);
     };
 
-    // Função para mudar o dia no calendário
-    const onCalendarChange = async (date) => { // AGORA É ASYNC
+    const onCalendarChange = async (date) => {
         setSelectedDate(date);
         
-        // NOVO: Busca a disponibilidade real ao mudar o dia no calendário
-        const updatedSlots = await fetchSlotsAvailability(selectedArea.id, date);
-        setAvailableSlots(updatedSlots);
+        const fetchedSlots = await fetchSlotsAvailability(selectedArea.id, date);
+        setAvailableSlots(fetchedSlots);
         
         setSelectedSlot(null);
     };
@@ -172,10 +166,11 @@ export default function AreasComuns() {
 
     const handleConfirmarReservaClick = () => {
         if (selectedSlot && selectedDate) {
+            // CORREÇÃO AQUI: CALCULA END TIME USANDO setUTCHours para consistência
             const [hours, minutes] = selectedSlot.time.split(':').map(Number);
             const endDate = new Date(selectedDate);
-            endDate.setHours(hours + 3, minutes, 0, 0); 
-
+            endDate.setUTCHours(hours + 3, minutes, 0, 0); // Define a hora de término em UTC
+            // Formata para exibição local
             setReservationEndTime(endDate.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }));
             
             setShowReservaModal(false);
@@ -190,6 +185,7 @@ export default function AreasComuns() {
         setReservationEndTime('');
     };
 
+    // CORREÇÃO PRINCIPAL: handleSubmitReserva agora cria datas em UTC
     const handleSubmitReserva = async (e) => {
         e.preventDefault();
 
@@ -199,18 +195,21 @@ export default function AreasComuns() {
         }
 
         const [hours, minutes] = selectedSlot.time.split(':').map(Number);
+        
+        // NOVO: Criar data de início em UTC
         const dataInicioObj = new Date(selectedDate);
-        dataInicioObj.setHours(hours, minutes, 0, 0);
+        dataInicioObj.setUTCHours(hours, minutes, 0, 0); // Define a hora em UTC
 
+        // NOVO: Criar data de fim em UTC
         const dataFimObj = new Date(selectedDate);
-        dataFimObj.setHours(hours + 3, minutes, 0, 0);
+        dataFimObj.setUTCHours(hours + 3, minutes, 0, 0); // Define a hora em UTC (3h depois)
 
         const reservaData = {
             areaId: selectedArea.id,
             usuarioId: userId,
             condominioId: condominioID,
-            dataInicio: dataInicioObj.toISOString(),
-            dataFim: dataFimObj.toISOString(),
+            dataInicio: dataInicioObj.toISOString(), // Envia em formato ISO (que é UTC)
+            dataFim: dataFimObj.toISOString(),       // Envia em formato ISO (que é UTC)
             titulo: reservationTitle,
             observacoes: reservationNotes,
             status: '0', // Status inicial como pendente ('0')
@@ -361,7 +360,7 @@ export default function AreasComuns() {
                                 <button 
                                     type="button" 
                                     className="btn btn-success" 
-                                    disabled={!selectedSlot}
+                                    disabled={!selectedSlot || !selectedSlot.isAvailable}
                                     onClick={handleConfirmarReservaClick}
                                 >
                                     Confirmar Reserva
