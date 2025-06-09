@@ -8,14 +8,13 @@ import Head from 'next/head';
 
 export default function Assembleias() {
     const router = useRouter();
-    const userId = Cookies.get('userId');
+    const userId = Cookies.get('userId'); // O userId do usuário logado
     const tipoUsuario = Cookies.get('tipoUsuario');
     const [condominioID, setCondominioId] = useState(null);
     const [assembleias, setAssembleias] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
-    // ESTADOS PARA O MODAL DE AGENDAMENTO (APENAS ADMIN)
     const [showAgendarModal, setShowAgendarModal] = useState(false);
     const [assembleiaTitle, setAssembleiaTitle] = useState('');
     const [assembleiaDate, setAssembleiaDate] = useState('');
@@ -43,14 +42,20 @@ export default function Assembleias() {
         setLoading(true);
         setError(null);
         try {
-            // Endpoint para listar assembleias (a ser criado)
-            const response = await fetch(`http://localhost:5000/api/assembleias/condominio/${condominioID}`);
+            // NOVO: Adiciona userId como query param (ou header)
+            const url = `http://localhost:5000/api/assembleias/condominio/${condominioID}?userId=${userId}`; // Passando userId como query param para teste
+            // OU, melhor prática (se backend configurar): const response = await fetch(url, { headers: { 'x-user-id': userId } });
+
+            const response = await fetch(url);
 
             if (response.ok) {
                 const data = await response.json();
-                // Filtra assembleias passadas (opcional, pode ser feito no backend)
-                const futurasAssembleias = data.assembleias ? data.assembleias.filter(a => new Date(a.data_hora) >= new Date()) : [];
-                setAssembleias(futurasAssembleias.sort((a, b) => new Date(a.data_hora) - new Date(b.data_hora))); // Ordena por data
+                const now = new Date(); 
+                
+                const futurasAssembleias = data.assembleias ? 
+                    data.assembleias.filter(a => new Date(a.data_hora) >= now) : [];
+                
+                setAssembleias(futurasAssembleias.sort((a, b) => new Date(a.data_hora) - new Date(b.data_hora)));
             } else {
                 const errorData = await response.json();
                 console.error('Erro ao buscar assembleias:', errorData.message || response.statusText);
@@ -64,7 +69,7 @@ export default function Assembleias() {
         } finally {
             setLoading(false);
         }
-    }, [condominioID]);
+    }, [condominioID, userId]); // Adicionado userId como dependência
 
     useEffect(() => {
         if (condominioID) {
@@ -72,7 +77,6 @@ export default function Assembleias() {
         }
     }, [condominioID, fetchAssembleias]);
 
-    // Função para agendar assembleia (apenas Admin)
     const handleAgendarAssembleia = async (e) => {
         e.preventDefault();
         if (!assembleiaTitle || !assembleiaDate || !assembleiaTime || !condominioID || !userId) {
@@ -80,9 +84,15 @@ export default function Assembleias() {
             return;
         }
 
-        const dataHora = new Date(`${assembleiaDate}T${assembleiaTime}:00.000Z`); // Em UTC para consistência
-        if (isNaN(dataHora.getTime()) || dataHora < new Date()) { // Verifica se a data é válida e não está no passado
-            alert('Data e hora da assembleia inválidas ou no passado.');
+        const dataHora = new Date(`${assembleiaDate}T${assembleiaTime}:00.000Z`); 
+        
+        const now = new Date();
+        now.setSeconds(0, 0); 
+
+        const agendamentoUTC = new Date(assembleiaDate + 'T' + assembleiaTime + ':00.000Z');
+
+        if (isNaN(dataHora.getTime()) || agendamentoUTC < now) {
+            alert('Data e hora da assembleia inválidas ou no passado. Agende para um horário futuro.');
             return;
         }
 
@@ -91,7 +101,7 @@ export default function Assembleias() {
             data_hora: dataHora.toISOString(),
             descricao: assembleiaDescription,
             condominio_id: condominioID,
-            criador_id: userId, // ID do administrador que agendou
+            criador_id: userId,
         };
 
         try {
@@ -120,7 +130,6 @@ export default function Assembleias() {
         }
     };
 
-    // Função para confirmar presença (apenas Morador)
     const handleConfirmarPresenca = async (assembleiaId) => {
         if (!confirm('Tem certeza que deseja confirmar sua presença nesta assembleia?')) {
             return;
@@ -129,13 +138,12 @@ export default function Assembleias() {
             const response = await fetch(`http://localhost:5000/api/assembleias/${assembleiaId}/confirmar-presenca`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ usuarioId: userId }), // ID do morador confirmando
+                body: JSON.stringify({ usuarioId: userId }),
             });
 
             if (response.ok) {
                 alert('Presença confirmada com sucesso!');
-                // Opcional: Atualizar o estado da assembleia para mostrar que o usuário confirmou
-                fetchAssembleias(); // Recarrega a lista para atualizar a visualização
+                fetchAssembleias(); // Recarrega a lista para atualizar a visualização (incluindo o status da presença)
             } else {
                 const errorData = await response.json();
                 console.error('Erro ao confirmar presença:', errorData.message || response.statusText);
@@ -152,9 +160,9 @@ export default function Assembleias() {
         if (!isoString) return 'N/A';
         const date = new Date(isoString);
         return date.toLocaleDateString('pt-BR', {
-            day: '2-digit', month: '2-digit', year: 'numeric'
+            day: '2-digit', month: '2-digit', year: 'numeric', timeZone: 'UTC'
         }) + ' às ' + date.toLocaleTimeString('pt-BR', {
-            hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'UTC' // Exibe a hora em UTC
+            hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'UTC'
         });
     };
 
@@ -218,13 +226,16 @@ export default function Assembleias() {
                                         {/* Ações de Morador (Confirmar Presença) */}
                                         {tipoUsuario === 'Morador' && (
                                             <div className="mt-3">
-                                                {/* A lógica para verificar se o morador JÁ confirmou presença virá depois, no backend */}
-                                                <button
-                                                    className="btn btn-success btn-sm"
-                                                    onClick={() => handleConfirmarPresenca(assembleia.id)}
-                                                >
-                                                    Confirmar Presença
-                                                </button>
+                                                {assembleia.presencaConfirmada ? ( // NOVO: Renderiza condicionalmente
+                                                    <span className="badge bg-success">Presença Confirmada!</span>
+                                                ) : (
+                                                    <button
+                                                        className="btn btn-success btn-sm"
+                                                        onClick={() => handleConfirmarPresenca(assembleia.id)}
+                                                    >
+                                                        Confirmar Presença
+                                                    </button>
+                                                )}
                                             </div>
                                         )}
 
