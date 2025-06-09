@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback } from 'react';
 import Cookies from 'js-cookie';
 import { useRouter } from 'next/router';
 import LogoutButton from '../components/LogoutButton';
-import Head from 'next/head'; 
+import Head from 'next/head';
 
 export default function Condo() {
     const router = useRouter();
@@ -49,6 +49,10 @@ export default function Condo() {
     }, [condominioID, fetchCondominiosPendentes]);
 
     const alterarStatusVinculo = async (usuarioId, status) => {
+        if (!confirm(`Tem certeza que deseja alterar o status do vínculo para ${status}?`)) {
+            return;
+        }
+
         try {
             const response = await fetch(`http://localhost:5000/api/usuariocondominio/vinculo/status`, {
                 method: 'PUT',
@@ -59,16 +63,14 @@ export default function Condo() {
             });
 
             if (response.ok) {
-                alert(status === 1 ? 'Solicitação aceita com sucesso!' : 'Solicitação recusada com sucesso!');
-                
-                setCondominiosPendentes(prevPendentes => 
+                alert('Status do vínculo atualizado com sucesso!');
+                setCondominiosPendentes(prevPendentes =>
                     prevPendentes.filter(usuario => usuario.id !== usuarioId)
                 );
-
             } else {
-                const error = await response.json();
-                console.error('Erro ao alterar status do vínculo:', error.message);
-                alert(`Erro: ${error.message || 'Erro desconhecido ao processar a solicitação.'}`);
+                const errorData = await response.json();
+                console.error('Erro ao alterar status do vínculo:', errorData.message);
+                alert(`Erro: ${errorData.message || 'Erro desconhecido ao processar a solicitação.'}`);
             }
         } catch (error) {
             console.error('Erro ao alterar status do vínculo:', error);
@@ -85,6 +87,7 @@ export default function Condo() {
             <div className="container mt-5">
                 <h1 className="mb-4">Página do Condomínio</h1>
 
+                {/* Container para os botões de ação */}
                 <div className="d-flex flex-wrap align-items-center mb-4">
                     {/* Botão de Voltar para Home */}
                     <button
@@ -103,7 +106,7 @@ export default function Condo() {
                             onClick={() => {
                                 setNotificacoesToggle(!notificacoesToggle);
                                 if (!notificacoesToggle) {
-                                    fetchCondominiosPendentes(); 
+                                    fetchCondominiosPendentes();
                                 }
                             }}
                         >
@@ -111,35 +114,45 @@ export default function Condo() {
                         </button>
                     )}
 
-                    {/* NOVO BOTÃO: Áreas Comuns */}
+                    {/* Botão para Áreas Comuns */}
                     <button
                         type="button"
-                        className="btn btn-info me-2 mb-2" // Cor "info" para diferenciar
+                        className="btn btn-info me-2 mb-2"
                         onClick={() => router.push(`/areas-comuns?id=${condominioID}`)}
                     >
                         Áreas Comuns
                     </button>
 
-                    {/* NOVO BOTÃO: Minhas Reservas (visível apenas para Morador) */}
+                    {/* Botão para Minhas Reservas (visível apenas para Morador) */}
                     {tipoUsuario === 'Morador' && (
                         <button
                             type="button"
-                            className="btn btn-info me-2 mb-2" // Cor "success" para diferenciar
+                            className="btn btn-info me-2 mb-2"
                             onClick={() => router.push(`/minhas-reservas?condominioId=${condominioID}`)}
                         >
                             Minhas Reservas
                         </button>
                     )}
 
+                    {/* Botão para Gerenciar Reservas (visível apenas para Administrador) */}
                     {tipoUsuario === 'Administrador' && (
                         <button
                             type="button"
-                            className="btn btn-info me-2 mb-2" // Cor "dark" para diferenciar
+                            className="btn btn-info me-2 mb-2"
                             onClick={() => router.push(`/gerenciar-reservas?id=${condominioID}`)}
                         >
                             Gerenciar Reservas
                         </button>
                     )}
+
+                    {/* NOVO BOTÃO: Assembleias */}
+                    <button
+                        type="button"
+                        className="btn btn-info me-2 mb-2" // Usando 'primary' para destaque, pode mudar
+                        onClick={() => router.push(`/assembleias?id=${condominioID}`)}
+                    >
+                        Assembleias
+                    </button>
 
                     {/* Botão de Avisos */}
                     <button
@@ -188,7 +201,7 @@ export default function Condo() {
                         )}
                     </div>
                 )}
-                
+
                 {/* Botão de Logout */}
                 <div className="mt-4">
                     <LogoutButton />
