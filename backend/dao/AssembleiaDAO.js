@@ -178,6 +178,42 @@ class AssembleiaDAO {
         }
     }
 
+    /**
+     * Lista todos os usuários que confirmaram presença em uma assembleia específica.
+     * @param {number} assembleiaId O ID da assembleia.
+     * @returns {Promise<Array>} Um array de objetos de usuário (participantes).
+     */
+    static async listarParticipantesAssembleia(assembleiaId) {
+        try {
+            const { data, error } = await supabase
+                .from('assembleia_participantes')
+                .select(`
+                    usuario_id,
+                    usuario:usuario(id, nome, email, cpf, telefone) // Popula dados do usuário participante
+                `)
+                .eq('assembleia_id', assembleiaId);
+
+            if (error) {
+                console.error('Erro Supabase ao listar participantes da assembleia:', error);
+                throw new Error(`Erro ao listar participantes: ${error.message}`);
+            }
+
+            // Mapeia para retornar apenas os objetos de usuário
+            const participantesFormatados = data.map(participacao => ({
+                id: participacao.usuario.id,
+                nome: participacao.usuario.nome,
+                email: participacao.usuario.email,
+                cpf: participacao.usuario.cpf,
+                telefone: participacao.usuario.telefone,
+                // Opcional: confirmadoEm: new Date(participacao.confirmado_em).toLocaleString('pt-BR')
+            }));
+
+            return participantesFormatados;
+        } catch (error) {
+            console.error('Erro na DAO ao listar participantes da assembleia:', error);
+            throw new Error('Erro ao listar participantes da assembleia.');
+        }
+    }
 }
 
 module.exports = AssembleiaDAO;

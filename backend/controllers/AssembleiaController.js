@@ -125,6 +125,33 @@ class AssembleiaController {
             res.status(500).json({ message: `Erro ao listar assembleias: ${error.message}` });
         }
     }
+
+    /**
+     * Lista os participantes que confirmaram presença em uma assembleia.
+     * @param {object} req Objeto de requisição.
+     * @param {object} res Objeto de resposta.
+     */
+    static async listarParticipantes(req, res) {
+        const { assembleiaId } = req.params;
+
+        if (!assembleiaId) {
+            return res.status(400).json({ message: 'ID da assembleia é obrigatório para listar participantes.' });
+        }
+
+        try {
+            const participantes = await AssembleiaDAO.listarParticipantesAssembleia(assembleiaId);
+            
+            if (!participantes || participantes.length === 0) {
+                return res.status(200).json({ message: 'Nenhum participante encontrado para esta assembleia.', participantes: [] });
+            }
+
+            res.status(200).json({ message: 'Participantes listados com sucesso!', participantes: participantes });
+
+        } catch (error) {
+            console.error('Erro ao listar participantes da assembleia:', error);
+            res.status(500).json({ message: `Erro ao listar participantes: ${error.message}` });
+        }
+    }
 }
 
 module.exports = AssembleiaController;
