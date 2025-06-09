@@ -50,15 +50,21 @@ class CondominioDAO {
 
   // Função para buscar um condomínio por ID
   static async getCondominioById(id) {
-    const { data, error } = await supabase
-      .from('condominios')
-      .select('*')
-      .eq('id', id)
-      .single(); // Usando .single() para garantir que retorne no máximo 1 resultado
+      const { data, error } = await supabase
+          .from('condominio') // Certifique-se que o nome da tabela é 'condominio'
+          .select('*')
+          .eq('id', id)
+          .single(); // Retorna um único registro
 
-    if (error) throw new Error("Condomínio não encontrado!");
-
-    return data; // Retorna os dados do condomínio
+      if (error) {
+          // Se o erro for "no rows found", data será null, não um erro real
+          if (error.code === 'PGRST116') { // Código para "no rows found"
+              return null; // Retorna null se não encontrar
+          }
+          console.error('Erro Supabase ao buscar condomínio por ID:', error.message);
+          throw new Error(`Erro ao buscar condomínio: ${error.message}`);
+      }
+      return data;
   }
 
   // Função para atualizar os dados de um condomínio

@@ -10,6 +10,7 @@ export default function Condo() {
     const router = useRouter();
     const userId = Cookies.get('userId');
     const [condominioID, setCondominioId] = useState(null);
+    const [condominioNome, setCondominioNome] = useState(''); // NOVO ESTADO: para armazenar o nome do condomínio
     const [condominiosPendentes, setCondominiosPendentes] = useState([]);
     const [notificacoesToggle, setNotificacoesToggle] = useState(false);
     const [tipoUsuario, setTipoUsuario] = useState(null);
@@ -33,6 +34,26 @@ export default function Condo() {
         }
     }, [condominioID]);
 
+    // NOVO: Função para buscar o nome do condomínio
+    const fetchCondominioNome = useCallback(async () => {
+        if (!condominioID) return;
+        try {
+            // Supondo que você tem um endpoint /api/condominios/:id que retorna os detalhes do condomínio
+            const response = await fetch(`http://localhost:5000/api/condominios/${condominioID}`);
+            if (response.ok) {
+                const data = await response.json();
+                setCondominioNome(data.nome); // Assume que a API retorna um objeto com a propriedade 'nome'
+            } else {
+                console.error('Erro ao buscar nome do condomínio:', response.statusText);
+                setCondominioNome('Condomínio Não Encontrado');
+            }
+        } catch (error) {
+            console.error('Erro de rede ao buscar nome do condomínio:', error);
+            setCondominioNome('Erro ao Carregar Nome');
+        }
+    }, [condominioID]);
+
+
     useEffect(() => {
         if (!userId) {
             router.push('/login');
@@ -45,8 +66,9 @@ export default function Condo() {
     useEffect(() => {
         if (condominioID) {
             fetchCondominiosPendentes();
+            fetchCondominioNome(); // NOVO: Chama a função para buscar o nome
         }
-    }, [condominioID, fetchCondominiosPendentes]);
+    }, [condominioID, fetchCondominiosPendentes, fetchCondominioNome]); // Adiciona fetchCondominioNome às dependências
 
     const alterarStatusVinculo = async (usuarioId, status) => {
         if (!confirm(`Tem certeza que deseja alterar o status do vínculo para ${status}?`)) {
@@ -81,11 +103,16 @@ export default function Condo() {
     return (
         <>
             <Head>
-                <title>Condomínio - Detalhes</title>
+                {/* NOVO: Título da página com o nome do condomínio */}
+                <title>{condominioNome ? `${condominioNome} - Condomínio` : 'Página do Condomínio'}</title>
             </Head>
 
             <div className="container mt-5">
-                <h1 className="mb-4">Página do Condomínio</h1>
+                {/* NOVO: Título principal da página com o nome do condomínio */}
+                <h1 className="mb-4">
+                    {condominioNome ? `Condomínio ${condominioNome}` : 'Página do Condomínio'}
+                    {condominioID && !condominioNome && ` (ID: ${condominioID})`} {/* Exibe ID se nome não estiver carregado */}
+                </h1>
 
                 {/* Container para os botões de ação */}
                 <div className="d-flex flex-wrap align-items-center mb-4">
@@ -145,10 +172,10 @@ export default function Condo() {
                         </button>
                     )}
 
-                    {/* NOVO BOTÃO: Assembleias */}
+                    {/* Botão Assembleias */}
                     <button
                         type="button"
-                        className="btn btn-info me-2 mb-2" // Usando 'primary' para destaque, pode mudar
+                        className="btn btn-info me-2 mb-2"
                         onClick={() => router.push(`/assembleias?id=${condominioID}`)}
                     >
                         Assembleias

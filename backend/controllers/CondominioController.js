@@ -54,6 +54,21 @@ class CondominioController {
             res.status(500).json({ message: 'Erro ao listar áreas comuns.', error: error.message });
         }
     }
+
+    static async getCondominioById(req, res) {
+        const { id } = req.params;
+        try {
+            const condominio = await CondominioDAO.getCondominioById(id);
+            if (condominio) {
+                res.status(200).json(condominio);
+            } else {
+                res.status(404).json({ message: 'Condomínio não encontrado.' });
+            }
+        } catch (error) {
+            console.error('Erro ao buscar condomínio por ID:', error);
+            res.status(500).json({ message: 'Erro ao buscar condomínio.' });
+        }
+    }
 }
 
 module.exports = CondominioController;
