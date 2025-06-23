@@ -3,14 +3,14 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import { useEffect, useState, useCallback } from 'react';
 import Cookies from 'js-cookie';
 import { useRouter } from 'next/router';
-import LogoutButton from '../../../components/LogoutButton'; 
+import LogoutButton from '../../../components/LogoutButton'; // Ajuste o caminho conforme a profundidade
 import Head from 'next/head';
 
 export default function FotosGaleria() {
     const router = useRouter();
     const { galeriaId, condominioId } = router.query;
     const userId = Cookies.get('userId');
-    const tipoUsuario = Cookies.get('tipoUsuario'); // "Morador" ou "Administrador"
+    const tipoUsuario = Cookies.get('tipoUsuario');
 
     const [galeriaNome, setGaleriaNome] = useState('');
     const [condominioNome, setCondominioNome] = useState('');
@@ -18,11 +18,18 @@ export default function FotosGaleria() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
+    // ESTADOS PARA O MODAL DE UPLOAD DE FOTO
     const [showUploadModal, setShowUploadModal] = useState(false);
     const [selectedFile, setSelectedFile] = useState(null);
     const [fileDescription, setFileDescription] = useState('');
     const [uploadLoading, setUploadLoading] = useState(false);
     const [uploadError, setUploadError] = useState(null);
+
+    // NOVOS ESTADOS PARA O MODAL DE VISUALIZAÇÃO DE IMAGEM COMPLETA
+    const [showImageViewer, setShowImageViewer] = useState(false);
+    const [currentImageUrl, setCurrentImageUrl] = useState('');
+    const [currentImageDescription, setCurrentImageDescription] = useState('');
+
 
     useEffect(() => {
         if (!userId) {
@@ -73,16 +80,15 @@ export default function FotosGaleria() {
         }
     }, [galeriaId, condominioId]);
 
-    // ATUALIZADO: fetchFotos - envia tipoUsuario para o backend
+
     const fetchFotos = useCallback(async () => {
         if (!galeriaId || !tipoUsuario) return; 
 
         setLoading(true);
         setError(null);
         try {
-            // NOVO: Passando userType como header para a API
             const response = await fetch(`http://localhost:5000/api/fotos/galeria/${galeriaId}`, {
-                headers: { 'x-user-type': tipoUsuario }, // Envia o tipo de usuário
+                headers: { 'x-user-type': tipoUsuario },
             });
             if (response.ok) {
                 const data = await response.json();
@@ -100,7 +106,7 @@ export default function FotosGaleria() {
         } finally {
             setLoading(false);
         }
-    }, [galeriaId, tipoUsuario]); // tipoUsuario como dependência
+    }, [galeriaId, tipoUsuario]);
 
     useEffect(() => {
         if (galeriaId && condominioId) {
@@ -164,12 +170,11 @@ export default function FotosGaleria() {
         }
     };
 
-    // NOVO: Função para alterar o status da foto (Aprovar/Rejeitar)
     const alterarStatusFoto = async (fotoId, novoStatus) => {
         if (!confirm(`Tem certeza que deseja ${novoStatus === 'aprovada' ? 'aprovar' : 'rejeitar'} esta foto?`)) {
             return;
         }
-        if (tipoUsuario !== 'Administrador') { // Segurança no frontend
+        if (tipoUsuario !== 'Administrador') {
             alert('Apenas administradores podem moderar fotos.');
             return;
         }
@@ -179,7 +184,7 @@ export default function FotosGaleria() {
                 method: 'PUT',
                 headers: { 
                     'Content-Type': 'application/json',
-                    'x-user-type': tipoUsuario, // Envia o tipo de usuário para o backend
+                    'x-user-type': tipoUsuario,
                 },
                 body: JSON.stringify({ status: novoStatus }),
             });
@@ -198,6 +203,19 @@ export default function FotosGaleria() {
         }
     };
 
+    // NOVO: Função para abrir o visualizador de imagem
+    const openImageViewer = (imageUrl, imageDescription) => {
+        setCurrentImageUrl(imageUrl);
+        setCurrentImageDescription(imageDescription || 'Visualização da Imagem');
+        setShowImageViewer(true);
+    };
+
+    // NOVO: Função para fechar o visualizador de imagem
+    const closeImageViewer = () => {
+        setShowImageViewer(false);
+        setCurrentImageUrl('');
+        setCurrentImageDescription('');
+    };
 
     return (
         <>
@@ -249,7 +267,8 @@ export default function FotosGaleria() {
                                             src={foto.url} 
                                             className="card-img-top" 
                                             alt={foto.descricao || `Foto da galeria ${galeriaNome}`} 
-                                            style={{ height: '200px', objectFit: 'cover' }}
+                                            style={{ height: '200px', objectFit: 'cover', cursor: 'pointer' }} // Adicionado cursor: pointer
+                                            onClick={() => openImageViewer(foto.url, foto.descricao)} // NOVO: Abre o visualizador ao clicar
                                         />
                                     )}
                                     <div className="card-body">
@@ -257,13 +276,11 @@ export default function FotosGaleria() {
                                         <p className="card-text text-muted" style={{ fontSize: '0.8rem' }}>
                                             Por: {foto.usuario ? foto.usuario.nome : 'N/A'} em {new Date(foto.criado_em).toLocaleDateString('pt-BR')}
                                         </p>
-                                        {/* NOVO: Exibir status da foto para ADMIN ou se for 'pendente' do próprio usuário */}
                                         {foto.status !== 'aprovada' && (tipoUsuario === 'Administrador' || (tipoUsuario === 'Morador' && String(foto.usuario_id) === String(userId))) && (
                                             <span className={`badge ${foto.status === 'pendente' ? 'bg-warning text-dark' : 'bg-danger'}`}>
                                                 {foto.status === 'pendente' ? 'Pendente' : 'Rejeitada'}
                                             </span>
                                         )}
-                                        {/* NOVO: Botões de aprovar/rejeitar/excluir para admin */}
                                         {tipoUsuario === 'Administrador' && foto.status !== 'aprovada' && (
                                             <div className="mt-3">
                                                 <button 
@@ -331,6 +348,33 @@ export default function FotosGaleria() {
                                         </button>
                                     </div>
                                 </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* NOVO MODAL: VISUALIZADOR DE IMAGEM COMPLETA */}
+            {showImageViewer && (
+                <div className="modal fade show d-block" tabIndex="-1" role="dialog" style={{ backgroundColor: 'rgba(0,0,0,0.8)' }}>
+                    <div className="modal-dialog modal-dialog-centered modal-xl" role="document"> {/* modal-xl para imagem grande */}
+                        <div className="modal-content">
+                            <div className="modal-header">
+                                <h5 className="modal-title">{currentImageDescription}</h5>
+                                <button type="button" className="btn-close" aria-label="Close" onClick={closeImageViewer}></button>
+                            </div>
+                            <div className="modal-body text-center">
+                                <img 
+                                    src={currentImageUrl} 
+                                    alt={currentImageDescription} 
+                                    className="img-fluid" 
+                                    style={{ maxHeight: '80vh', maxWidth: '100%', objectFit: 'contain' }} // Ajusta imagem ao modal
+                                />
+                            </div>
+                            <div className="modal-footer">
+                                <button type="button" className="btn btn-secondary" onClick={closeImageViewer}>
+                                    Fechar
+                                </button>
                             </div>
                         </div>
                     </div>
