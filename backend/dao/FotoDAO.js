@@ -4,7 +4,7 @@ const supabase = require('../config/supabase'); // Configuração do Supabase
 const Foto = require('../models/Foto'); // Classe Foto
 
 // Nome do seu bucket de Storage no Supabase
-const BUCKET_NAME = 'condo-photos'; 
+const BUCKET_NAME = 'void-photos'; 
 
 class FotoDAO {
 
