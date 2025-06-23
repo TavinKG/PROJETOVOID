@@ -232,7 +232,7 @@ export default function Home() {
                     onChange={(e) => setCnpjSearch(e.target.value)}
                     placeholder="Digite o CNPJ"
                   />
-                  <button className="btn btn-primary mt-2" onClick={handleSearchCondominio}>Buscar</button>
+                  <button className="btn btn-info mt-2" onClick={handleSearchCondominio}>Buscar</button>
                 </div>
 
                 {condominioEncontrado && (
@@ -309,7 +309,7 @@ export default function Home() {
                       </select>
                     </div>
                   ))}
-                  <button type="submit" className="btn btn-primary mt-3">Criar Condomínio</button>
+                  <button type="submit" className="btn btn-info mt-3">Criar Condomínio</button>
                 </form>
               </div>
               <div className="modal-footer">

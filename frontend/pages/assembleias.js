@@ -255,7 +255,7 @@ export default function Assembleias() {
                     {tipoUsuario === 'Administrador' && (
                         <button
                             type="button"
-                            className="btn btn-primary me-2 mb-2"
+                            className="btn btn-info me-2 mb-2"
                             onClick={() => setShowAgendarModal(true)}
                         >
                             Agendar Nova Assembleia

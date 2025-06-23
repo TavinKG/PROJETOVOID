@@ -317,7 +317,7 @@ export default function AreasComuns() {
                                             }
                                         </p>
                                         <button 
-                                            className="btn btn-primary btn-sm mt-2" 
+                                            className="btn btn-info btn-sm mt-2" 
                                             disabled={!area.disponibilidade}
                                             onClick={() => handleReservarClick(area)}
                                         >
@@ -382,7 +382,7 @@ export default function AreasComuns() {
                                 </button>
                                 <button 
                                     type="button" 
-                                    className="btn btn-success" 
+                                    className="btn btn-info" 
                                     disabled={!selectedSlot || !selectedSlot.isAvailable}
                                     onClick={handleConfirmarReservaClick}
                                 >
@@ -440,7 +440,7 @@ export default function AreasComuns() {
                                         <button type="button" className="btn btn-secondary me-2" onClick={closeConfirmacaoModal}>
                                             Cancelar
                                         </button>
-                                        <button type="submit" className="btn btn-success">
+                                        <button type="submit" className="btn btn-info">
                                             Finalizar Reserva
                                         </button>
                                     </div>

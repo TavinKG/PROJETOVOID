@@ -132,7 +132,7 @@ export default function Avisos() {
                 {tipoUsuario === 'Administrador' && (
                     <button
                         type="button"
-                        className="btn btn-success mb-3"
+                        className="btn btn-info mb-3"
                         onClick={() => setModalOpen(true)}
                     >
                         Criar Aviso
@@ -192,7 +192,7 @@ export default function Avisos() {
                                     </button>
                                     <button
                                         type="button"
-                                        className="btn btn-primary"
+                                        className="btn btn-info"
                                         onClick={criarAviso}
                                     >
                                         Salvar Aviso
