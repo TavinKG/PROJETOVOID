@@ -17,4 +17,6 @@ router.post('/upload', upload.single('file'), FotoController.uploadFoto);
 // Rota para listar fotos de uma galeria específica
 router.get('/galeria/:galeriaId', FotoController.listarFotos);
 
+router.put('/:fotoId/status', FotoController.alterarStatusFoto);
+
 module.exports = router;

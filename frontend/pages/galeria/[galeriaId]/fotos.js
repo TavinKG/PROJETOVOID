@@ -1,19 +1,16 @@
-// frontend/pages/galeria/[galeriaId]/fotos.js
+// pages/galeria/[galeriaId]/fotos.js
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { useEffect, useState, useCallback } from 'react';
 import Cookies from 'js-cookie';
-import { useRouter } from 'next/router'; // Para acessar router.query
-import LogoutButton from '../../../components/LogoutButton'; // Ajuste o caminho se seu componente LogoutButton estiver em outro local
+import { useRouter } from 'next/router';
+import LogoutButton from '../../../components/LogoutButton'; 
 import Head from 'next/head';
 
 export default function FotosGaleria() {
     const router = useRouter();
-    // ESSENCIAL: Acessa os parâmetros dinâmicos da URL via router.query
-    const { galeriaId, condominioId } = router.query; 
-    
-    // Outros estados do componente
-    const userId = Cookies.get('userId'); // Pega o ID do usuário logado
-    const tipoUsuario = Cookies.get('tipoUsuario'); // Pega o tipo do usuário
+    const { galeriaId, condominioId } = router.query;
+    const userId = Cookies.get('userId');
+    const tipoUsuario = Cookies.get('tipoUsuario'); // "Morador" ou "Administrador"
 
     const [galeriaNome, setGaleriaNome] = useState('');
     const [condominioNome, setCondominioNome] = useState('');
@@ -21,26 +18,22 @@ export default function FotosGaleria() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
-    // ESTADOS PARA O MODAL DE UPLOAD DE FOTO
     const [showUploadModal, setShowUploadModal] = useState(false);
     const [selectedFile, setSelectedFile] = useState(null);
     const [fileDescription, setFileDescription] = useState('');
     const [uploadLoading, setUploadLoading] = useState(false);
     const [uploadError, setUploadError] = useState(null);
 
-    // useEffect para redirecionar se o usuário não estiver logado
     useEffect(() => {
         if (!userId) {
             router.push('/login');
         } else if (!galeriaId || !condominioId) {
-            // Se os IDs não estão na URL (ex: acesso direto sem o parâmetro)
             console.error("IDs de galeria ou condomínio não encontrados na URL.");
             setError("IDs de galeria ou condomínio não encontrados. Por favor, volte para a galeria principal.");
             setLoading(false);
         }
     }, [userId, galeriaId, condominioId, router]);
 
-    // Função para buscar o nome do condomínio
     const fetchCondominioNome = useCallback(async () => {
         if (!condominioId) return;
         try {
@@ -58,13 +51,9 @@ export default function FotosGaleria() {
         }
     }, [condominioId]);
 
-    // Função para buscar o nome da galeria
     const fetchGaleriaNome = useCallback(async () => {
         if (!galeriaId) return;
         try {
-            // Chamamos a API que lista todas as galerias de um condomínio
-            // e então filtramos para encontrar a galeria específica pelo ID.
-            // Isso evita a necessidade de um endpoint /api/galerias/:galeriaId específico por enquanto.
             const response = await fetch(`http://localhost:5000/api/galerias/condominio/${condominioId}`);
             if (response.ok) {
                 const data = await response.json();
@@ -84,17 +73,17 @@ export default function FotosGaleria() {
         }
     }, [galeriaId, condominioId]);
 
-
-    // Função para buscar as fotos da galeria específica
+    // ATUALIZADO: fetchFotos - envia tipoUsuario para o backend
     const fetchFotos = useCallback(async () => {
-        // Só busca se ambos os IDs estiverem disponíveis
-        if (!galeriaId || !condominioId) return; 
+        if (!galeriaId || !tipoUsuario) return; 
 
         setLoading(true);
         setError(null);
         try {
-            // Chama a API do backend para listar fotos de uma galeria
-            const response = await fetch(`http://localhost:5000/api/fotos/galeria/${galeriaId}`);
+            // NOVO: Passando userType como header para a API
+            const response = await fetch(`http://localhost:5000/api/fotos/galeria/${galeriaId}`, {
+                headers: { 'x-user-type': tipoUsuario }, // Envia o tipo de usuário
+            });
             if (response.ok) {
                 const data = await response.json();
                 setFotos(data.fotos || []);
@@ -111,9 +100,8 @@ export default function FotosGaleria() {
         } finally {
             setLoading(false);
         }
-    }, [galeriaId, condominioId]); // Depende do galeriaId e condominioId para saber qual galeria buscar
+    }, [galeriaId, tipoUsuario]); // tipoUsuario como dependência
 
-    // useEffect principal para carregar dados quando os IDs estão disponíveis
     useEffect(() => {
         if (galeriaId && condominioId) {
             fetchGaleriaNome();
@@ -134,33 +122,35 @@ export default function FotosGaleria() {
 
     const handleUploadSubmit = async (e) => {
         e.preventDefault();
-        // Validação adicional: garante que o galeriaId e userId estejam disponíveis
         if (!selectedFile || !galeriaId || !userId) {
-            alert('Por favor, selecione um arquivo de imagem e certifique-se de estar logado e com a galeria selecionada.');
+            alert('Por favor, selecione um arquivo de imagem e preencha as informações necessárias.');
             return;
         }
 
         setUploadLoading(true);
         setUploadError(null);
 
+        const photoStatus = tipoUsuario === 'Administrador' ? 'aprovada' : 'pendente';
+
         const formData = new FormData();
-        formData.append('file', selectedFile); // 'file' deve corresponder ao nome do campo no multer
+        formData.append('file', selectedFile);
         formData.append('descricao', fileDescription);
-        formData.append('galeria_id', galeriaId); // Passa o ID da galeria
-        formData.append('usuario_id', userId); // Passa o ID do usuário que faz o upload
+        formData.append('galeria_id', galeriaId);
+        formData.append('usuario_id', userId);
+        formData.append('status', photoStatus);
 
         try {
             const response = await fetch('http://localhost:5000/api/fotos/upload', {
                 method: 'POST',
-                body: formData, // FormData define o Content-Type: multipart/form-data automaticamente
+                body: formData,
             });
 
             if (response.ok) {
-                alert('Foto enviada com sucesso!');
+                alert(`Foto enviada com sucesso! ${photoStatus === 'pendente' ? 'Aguardando aprovação do administrador.' : ''}`);
                 setShowUploadModal(false);
                 setSelectedFile(null);
                 setFileDescription('');
-                fetchFotos(); // Recarrega a lista de fotos da galeria para exibir a nova
+                fetchFotos(); // Recarrega a lista de fotos
             } else {
                 const errorData = await response.json();
                 console.error('Erro ao enviar foto:', errorData.message || response.statusText);
@@ -174,32 +164,62 @@ export default function FotosGaleria() {
         }
     };
 
+    // NOVO: Função para alterar o status da foto (Aprovar/Rejeitar)
+    const alterarStatusFoto = async (fotoId, novoStatus) => {
+        if (!confirm(`Tem certeza que deseja ${novoStatus === 'aprovada' ? 'aprovar' : 'rejeitar'} esta foto?`)) {
+            return;
+        }
+        if (tipoUsuario !== 'Administrador') { // Segurança no frontend
+            alert('Apenas administradores podem moderar fotos.');
+            return;
+        }
+
+        try {
+            const response = await fetch(`http://localhost:5000/api/fotos/${fotoId}/status`, {
+                method: 'PUT',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'x-user-type': tipoUsuario, // Envia o tipo de usuário para o backend
+                },
+                body: JSON.stringify({ status: novoStatus }),
+            });
+
+            if (response.ok) {
+                alert(`Foto ${novoStatus === 'aprovada' ? 'aprovada' : 'rejeitada'} com sucesso!`);
+                fetchFotos(); // Recarrega a lista de fotos
+            } else {
+                const errorData = await response.json();
+                console.error('Erro ao alterar status da foto:', errorData.message || response.statusText);
+                alert(`Erro ao alterar status: ${errorData.message || 'Erro desconhecido.'}`);
+            }
+        } catch (error) {
+            console.error('Erro de rede ou ao alterar status da foto:', error);
+            alert('Erro ao processar a alteração do status.');
+        }
+    };
+
 
     return (
         <>
             <Head>
-                {/* Título dinâmico da aba do navegador */}
                 <title>{galeriaNome ? `${galeriaNome} - Fotos` : 'Fotos da Galeria'}</title>
             </Head>
 
             <div className="container mt-5">
-                {/* Título principal da página */}
                 <h1 className="mb-4">
-                    Fotos da Galeria: {galeriaNome || 'Carregando...'} {condominioNome && `(${condominioNome})`}
+                    Fotos da Galeria: {galeriaNome} {condominioNome && `(${condominioNome})`}
                 </h1>
 
-                {/* Botões de Ação */}
                 <div className="d-flex flex-wrap align-items-center mb-4">
                     <button
                         type="button"
                         className="btn btn-secondary me-2 mb-2"
-                        // Volta para a página principal de galerias, passando o ID do condomínio
                         onClick={() => router.push(`/galeria?id=${condominioId}`)} 
                     >
                         Voltar para Galerias
                     </button>
 
-                    {tipoUsuario === 'Administrador' && (
+                    {(tipoUsuario === 'Administrador' || tipoUsuario === 'Morador') && ( 
                         <button
                             type="button"
                             className="btn btn-primary me-2 mb-2"
@@ -211,7 +231,6 @@ export default function FotosGaleria() {
                     <LogoutButton />
                 </div>
 
-                {/* Mensagens de Carregamento/Erro/Vazio */}
                 {loading && <p className="text-info mt-4">Carregando fotos...</p>}
                 {error && <p className="text-danger mt-4">{error}</p>}
 
@@ -238,12 +257,29 @@ export default function FotosGaleria() {
                                         <p className="card-text text-muted" style={{ fontSize: '0.8rem' }}>
                                             Por: {foto.usuario ? foto.usuario.nome : 'N/A'} em {new Date(foto.criado_em).toLocaleDateString('pt-BR')}
                                         </p>
-                                        {foto.status !== 'aprovada' && tipoUsuario === 'Administrador' && (
+                                        {/* NOVO: Exibir status da foto para ADMIN ou se for 'pendente' do próprio usuário */}
+                                        {foto.status !== 'aprovada' && (tipoUsuario === 'Administrador' || (tipoUsuario === 'Morador' && String(foto.usuario_id) === String(userId))) && (
                                             <span className={`badge ${foto.status === 'pendente' ? 'bg-warning text-dark' : 'bg-danger'}`}>
                                                 {foto.status === 'pendente' ? 'Pendente' : 'Rejeitada'}
                                             </span>
                                         )}
-                                        {/* Futuramente: Botões de aprovar/rejeitar/excluir para admin */}
+                                        {/* NOVO: Botões de aprovar/rejeitar/excluir para admin */}
+                                        {tipoUsuario === 'Administrador' && foto.status !== 'aprovada' && (
+                                            <div className="mt-3">
+                                                <button 
+                                                    className="btn btn-success btn-sm me-2"
+                                                    onClick={() => alterarStatusFoto(foto.id, 'aprovada')}
+                                                >
+                                                    Aprovar
+                                                </button>
+                                                <button 
+                                                    className="btn btn-danger btn-sm"
+                                                    onClick={() => alterarStatusFoto(foto.id, 'rejeitada')}
+                                                >
+                                                    Rejeitar
+                                                </button>
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                             </div>
@@ -252,8 +288,8 @@ export default function FotosGaleria() {
                 )}
             </div>
 
-            {/* MODAL PARA UPLOAD DE FOTO (APENAS ADMIN) */}
-            {showUploadModal && tipoUsuario === 'Administrador' && (
+            {/* MODAL PARA UPLOAD DE FOTO */}
+            {showUploadModal && (tipoUsuario === 'Administrador' || tipoUsuario === 'Morador') && (
                 <div className="modal fade show d-block" tabIndex="-1" role="dialog" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
                     <div className="modal-dialog modal-dialog-centered" role="document">
                         <div className="modal-content">

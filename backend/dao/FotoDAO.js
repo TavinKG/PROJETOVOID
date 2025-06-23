@@ -73,13 +73,15 @@ class FotoDAO {
     }
 
     /**
-     * Lista todas as fotos de uma galeria específica.
+     * Lista as fotos de uma galeria específica, com filtro opcional por status
+     * ou exibição de todas para administradores.
      * @param {number} galeriaId O ID da galeria.
+     * @param {string} userRole O tipo de usuário logado ('Morador', 'Administrador').
      * @returns {Promise<Array>} Um array de objetos de foto.
      */
-    static async listarFotosPorGaleria(galeriaId) {
+    static async listarFotosPorGaleria(galeriaId, userRole = 'Morador') { // NOVO: userRole como parâmetro
         try {
-            const { data, error } = await supabase
+            let query = supabase
                 .from('foto')
                 .select(`
                     id,
@@ -91,9 +93,18 @@ class FotoDAO {
                     criado_em,
                     usuario:usuario(nome, email) // Popula dados do usuário que enviou a foto
                 `)
-                .eq('galeria_id', galeriaId)
-                .eq('status', 'aprovada') // Apenas fotos aprovadas para visualização pública
-                .order('criado_em', { ascending: false });
+                .eq('galeria_id', galeriaId);
+
+            // NOVO: Lógica de filtragem baseada no papel do usuário
+            if (userRole === 'Morador') {
+                query = query.eq('status', 'aprovada'); // Moradores veem apenas fotos aprovadas
+            }
+            // Administradores veem todas por padrão, pois não há filtro de status aqui se não for morador.
+            // Se você quiser que o admin possa filtrar por status, precisaria de outro parâmetro 'filterStatus'
+
+            query = query.order('criado_em', { ascending: false });
+
+            const { data, error } = await query;
 
             if (error) {
                 console.error('Erro Supabase ao listar fotos por galeria:', error);
@@ -123,7 +134,7 @@ class FotoDAO {
             .from('foto')
             .update({ status: novoStatus })
             .eq('id', fotoId)
-            .select();
+            .select(); // Retorna os dados atualizados
 
         if (error) {
             console.error('Erro Supabase ao alterar status da foto:', error);

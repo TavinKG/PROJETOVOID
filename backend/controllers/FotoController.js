@@ -54,20 +54,18 @@ class FotoController {
         }
     }
 
-    /**
-     * Lista todas as fotos de uma galeria específica.
-     * @param {object} req Objeto de requisição.
-     * @param {object} res Objeto de resposta.
-     */
     static async listarFotos(req, res) {
         const { galeriaId } = req.params;
+        // NOVO: Pega o tipo de usuário do header ou query (melhor do header para autenticação)
+        const tipoUsuario = req.headers['x-user-type'] || req.query.userType; 
 
         if (!galeriaId) {
             return res.status(400).json({ message: 'ID da galeria é obrigatório para listar fotos.' });
         }
 
         try {
-            const fotos = await FotoDAO.listarFotosPorGaleria(galeriaId);
+            // Passa o tipo de usuário para a DAO
+            const fotos = await FotoDAO.listarFotosPorGaleria(galeriaId, tipoUsuario); 
             
             if (!fotos || fotos.length === 0) {
                 return res.status(200).json({ message: 'Nenhuma foto encontrada para esta galeria.', fotos: [] });
@@ -81,8 +79,37 @@ class FotoController {
         }
     }
 
+    static async alterarStatusFoto(req, res) {
+        const { fotoId } = req.params;
+        const { status } = req.body; // Novo status ('aprovada', 'rejeitada')
+        const tipoUsuario = req.headers['x-user-type']; // Para verificar permissão (se necessário)
+
+        // Ações de moderação só para administradores
+        if (tipoUsuario !== 'Administrador') {
+            return res.status(403).json({ message: 'Acesso negado. Apenas administradores podem moderar fotos.' });
+        }
+
+        const statusPermitidos = ['aprovada', 'rejeitada'];
+        if (!statusPermitidos.includes(status)) {
+            return res.status(400).json({ message: 'Status inválido fornecido. Use "aprovada" ou "rejeitada".' });
+        }
+
+        try {
+            const fotoAtualizada = await FotoDAO.alterarStatusFoto(fotoId, status);
+
+            if (!fotoAtualizada || fotoAtualizada.length === 0) {
+                return res.status(404).json({ message: 'Foto não encontrada ou status não pôde ser atualizado.' });
+            }
+
+            res.status(200).json({ message: 'Status da foto atualizado com sucesso!', data: fotoAtualizada[0] });
+
+        } catch (error) {
+            console.error('Erro ao alterar status da foto:', error);
+            res.status(500).json({ message: `Erro ao alterar status da foto: ${error.message}` });
+        }
+    }
+
     // --- Futuros Métodos Controller para Foto ---
-    // static async alterarStatusFoto(req, res) { ... } // Para moderação de fotos
     // static async deletarFoto(req, res) { ... }
 }
 
