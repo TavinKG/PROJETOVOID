@@ -2,37 +2,27 @@
 
 const FotoDAO = require('../dao/FotoDAO');
 const Foto = require('../models/Foto');
+const GaleriaDAO = require('../dao/GaleriaDAO');
 
 class FotoController {
 
-    /**
-     * Lida com o upload de uma foto, salvando no Storage e registrando no BD.
-     * Requer o middleware `multer` para processar o arquivo.
-     * @param {object} req Objeto de requisição (req.file contém o arquivo, req.body outros dados).
-     * @param {object} res Objeto de resposta.
-     */
     static async uploadFoto(req, res) {
-        // req.file é preenchido pelo multer
         if (!req.file) {
             return res.status(400).json({ message: 'Nenhum arquivo de imagem foi enviado.' });
         }
 
-        const { descricao, galeria_id, usuario_id, status } = req.body; // Dados do formulário
+        const { descricao, galeria_id, usuario_id, status } = req.body;
         
-        // Validações básicas
         if (!galeria_id || !usuario_id) {
             return res.status(400).json({ message: 'ID da galeria e ID do usuário são obrigatórios para o upload da foto.' });
         }
-        // O status pode ser 'pendente' ou 'aprovada'. Se não vier, define padrão.
-        const fotoStatus = status || 'aprovada'; // Ou 'pendente' se morador puder enviar
+        const fotoStatus = status || 'aprovada';
 
         try {
-            // 1. Fazer upload do arquivo para o Supabase Storage
             const publicUrl = await FotoDAO.uploadFotoToStorage(req.file, usuario_id);
 
-            // 2. Criar o registro da foto no banco de dados
             const novaFoto = new Foto(
-                null, // ID será gerado pelo banco
+                null,
                 publicUrl,
                 descricao,
                 galeria_id,
@@ -42,10 +32,22 @@ class FotoController {
 
             const fotoCriada = await FotoDAO.criarFoto(novaFoto);
 
+            // NOVO: Lógica para definir a foto de capa automaticamente após o upload
+            if (fotoStatus === 'aprovada') { // Apenas fotos aprovadas podem ser capa
+                // Verifica se esta foto é a de maior ID para a galeria
+                const ultimaFotoAprovada = await GaleriaDAO.buscarUltimaFotoGaleria(galeria_id);
+                if (ultimaFotoAprovada && ultimaFotoAprovada.id === fotoCriada[0].id) {
+                    await GaleriaDAO.atualizarFotoCapaGaleria(galeria_id, publicUrl);
+                } else if (!ultimaFotoAprovada) { // Se não havia nenhuma foto aprovada, esta é a primeira capa
+                    await GaleriaDAO.atualizarFotoCapaGaleria(galeria_id, publicUrl);
+                }
+            }
+
+
             res.status(201).json({
                 message: 'Foto enviada e registrada com sucesso!',
                 data: fotoCriada,
-                url: publicUrl // Inclui a URL pública na resposta
+                url: publicUrl
             });
 
         } catch (error) {
@@ -81,10 +83,9 @@ class FotoController {
 
     static async alterarStatusFoto(req, res) {
         const { fotoId } = req.params;
-        const { status } = req.body; // Novo status ('aprovada', 'rejeitada')
-        const tipoUsuario = req.headers['x-user-type']; // Para verificar permissão (se necessário)
+        const { status } = req.body;
+        const tipoUsuario = req.headers['x-user-type'];
 
-        // Ações de moderação só para administradores
         if (tipoUsuario !== 'Administrador') {
             return res.status(403).json({ message: 'Acesso negado. Apenas administradores podem moderar fotos.' });
         }
@@ -100,6 +101,17 @@ class FotoController {
             if (!fotoAtualizada || fotoAtualizada.length === 0) {
                 return res.status(404).json({ message: 'Foto não encontrada ou status não pôde ser atualizado.' });
             }
+
+            // NOVO: Lógica para definir a foto de capa após a aprovação
+            if (status === 'aprovada') {
+                const galeriaId = fotoAtualizada[0].galeria_id; // Pega o ID da galeria da foto atualizada
+                const ultimaFotoAprovada = await GaleriaDAO.buscarUltimaFotoGaleria(galeriaId);
+                // Se a foto aprovada é a de maior ID para aquela galeria, define ela como capa
+                if (ultimaFotoAprovada && ultimaFotoAprovada.id === fotoAtualizada[0].id) {
+                    await GaleriaDAO.atualizarFotoCapaGaleria(galeriaId, fotoAtualizada[0].url);
+                }
+            }
+
 
             res.status(200).json({ message: 'Status da foto atualizado com sucesso!', data: fotoAtualizada[0] });
 

@@ -69,6 +69,53 @@ class GaleriaDAO {
             throw new Error('Erro ao listar galerias do condomínio.');
         }
     }
+
+    static async buscarUltimaFotoGaleria(galeriaId) {
+        try {
+            const { data, error } = await supabase
+                .from('foto')
+                .select('id, url') // Seleciona ID e URL da foto
+                .eq('galeria_id', galeriaId)
+                .eq('status', 'aprovada') // Apenas fotos aprovadas podem ser capa
+                .order('id', { ascending: false }) // Ordena por ID em ordem decrescente
+                .limit(1) // Pega apenas a primeira (que será a de maior ID)
+                .single(); // Tenta retornar um único registro ou null
+
+            if (error) {
+                if (error.code === 'PGRST116') { // No rows found
+                    return null; // Nenhuma foto encontrada ou aprovada
+                }
+                console.error('Erro Supabase ao buscar última foto da galeria:', error.message);
+                throw new Error(`Erro ao buscar última foto da galeria: ${error.message}`);
+            }
+
+            return data; // Retorna o objeto da foto (id, url) ou null
+        } catch (error) {
+            console.error('Erro na DAO ao buscar última foto da galeria:', error);
+            throw new Error('Erro ao buscar última foto da galeria.');
+        }
+    }
+
+    static async atualizarFotoCapaGaleria(galeriaId, fotoCapaUrl) {
+        try {
+            const { data, error } = await supabase
+                .from('galeria')
+                .update({ foto_capa_url: fotoCapaUrl })
+                .eq('id', galeriaId)
+                .select();
+
+            if (error) {
+                console.error('Erro Supabase ao atualizar foto de capa da galeria:', error);
+                throw new Error(`Erro ao atualizar foto de capa da galeria: ${error.message}`);
+            }
+
+            console.log(`Foto de capa da galeria ${galeriaId} atualizada para: ${fotoCapaUrl}`);
+            return data;
+        } catch (error) {
+            console.error('Erro na DAO ao atualizar foto de capa da galeria:', error);
+            throw new Error('Erro ao atualizar foto de capa da galeria.');
+        }
+    }
 }
 
 module.exports = GaleriaDAO;
