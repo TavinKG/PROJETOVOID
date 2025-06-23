@@ -7,6 +7,9 @@ const UsuarioCondominioRoutes = require('./routes/UsuarioCondominioRoutes');
 const AvisoRoutes = require('./routes/AvisoRoutes');
 const ReservaRoutes = require('./routes/ReservaRoutes');
 const AssembleiaRoutes = require('./routes/AssembleiaRoutes');
+const GaleriaRoutes = require('./routes/GaleriaRoutes');
+const FotoRoutes = require('./routes/FotoRoutes');
+
 
 const app = express();
 app.use(cors());
@@ -18,6 +21,8 @@ app.use('/api/usuariocondominio', UsuarioCondominioRoutes);
 app.use('/api/avisos', AvisoRoutes);
 app.use('/api/reservas', ReservaRoutes);
 app.use('/api/assembleias', AssembleiaRoutes);
+app.use('/api/galerias', GaleriaRoutes);
+app.use('/api/fotos', FotoRoutes);
 
 const PORT = 5000;
 app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));

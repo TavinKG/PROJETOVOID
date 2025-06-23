@@ -180,6 +180,15 @@ export default function Condo() {
                         Assembleias
                     </button>
 
+                    {/* NOVO BOTÃO: Galeria de Fotos */}
+                    <button
+                        type="button"
+                        className="btn btn-info me-2 mb-2" // Escolha uma cor apropriada
+                        onClick={() => router.push(`/galeria?id=${condominioID}`)}
+                    >
+                        Galeria de Fotos
+                    </button>
+
                     {/* Botão de Avisos */}
                     <button
                         type="button"
