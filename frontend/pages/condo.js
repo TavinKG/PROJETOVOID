@@ -214,9 +214,9 @@ export default function Condo() {
                         <h2>Solicitações de Ingresso</h2>
                         {condominiosPendentes.length > 0 ? (
                             condominiosPendentes.map((usuario) => (
-                                <div key={usuario.id} className="card mb-3 shadow-sm">
+                                <div key={usuario.id} className="card mb-3 shadow-sm" style={{backgroundColor: 'rgb(3 7 18)', color: '#fff', border: '2px solid #4fc1e9'}}>
                                     <div className="card-body">
-                                        <h5 className="card-title">{usuario.nome}</h5>
+                                        <h5 className="card-title mb-4">{usuario.nome}</h5>
                                         <p className="card-text mb-1"><strong>Email:</strong> {usuario.email}</p>
                                         <p className="card-text mb-1"><strong>CPF:</strong> {usuario.cpf}</p>
                                         <p className="card-text mb-1"><strong>Telefone:</strong> {usuario.telefone}</p>

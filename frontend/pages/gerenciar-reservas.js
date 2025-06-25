@@ -168,7 +168,7 @@ export default function GerenciarReservas() {
 
                 <button
                     type="button"
-                    className="btn btn-secondary mb-4 me-2"
+                    className="btn btn-secondary me-2"
                     onClick={() => router.push(`/condo?id=${condominioID}`)}
                 >
                     Voltar para o Condomínio
@@ -177,31 +177,31 @@ export default function GerenciarReservas() {
                 <LogoutButton />
 
                 {/* Seção de Filtros */}
-                <div className="mb-4 p-3 border rounded bg-light">
+                <div className="mt-4 mb-4 p-3 rounded" style={{border: '2px solid #4fc1e9'}}>
                     <h4>Filtros</h4>
                     <div className="row g-3">
                         <div className="col-md-4">
                             <label htmlFor="filterArea" className="form-label">Área</label>
-                            <select id="filterArea" className="form-select" value={filterAreaId} onChange={(e) => setFilterAreaId(e.target.value)}>
-                                <option value="">Todas as Áreas</option>
+                            <select id="filterArea" className="form-select" value={filterAreaId} onChange={(e) => setFilterAreaId(e.target.value)} style={{backgroundColor: '#4fc1e9', border: 'none', fontWeight: 'bold'}}>
+                                <option value="" style={{fontWeight:'bold'}}>Todas as Áreas</option>
                                 {areasComunsCondominio.map(area => (
-                                    <option key={area.id} value={area.id}>{area.nome}</option>
+                                    <option key={area.id} value={area.id} style={{fontWeight:'bold'}}>{area.nome}</option>
                                 ))}
                             </select>
                         </div>
                         <div className="col-md-4">
                             <label htmlFor="filterStatus" className="form-label">Status</label>
-                            <select id="filterStatus" className="form-select" value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)}>
-                                <option value="">Todos os Status</option>
-                                <option value="0">Pendente</option>
-                                <option value="1">Aprovada</option>
-                                <option value="2">Recusada</option>
-                                <option value="5">Cancelada</option>
+                            <select id="filterStatus" className="form-select" value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)} style={{backgroundColor: '#4fc1e9', border: 'none', fontWeight:'bold'}}>
+                                <option value="" style={{fontWeight:'bold'}}>Todos os Status</option>
+                                <option value="0" style={{fontWeight:'bold'}}>Pendente</option>
+                                <option value="1" style={{fontWeight:'bold'}}>Aprovada</option>
+                                <option value="2" style={{fontWeight:'bold'}}>Recusada</option>
+                                <option value="5" style={{fontWeight:'bold'}}>Cancelada</option>
                             </select>
                         </div>
                         <div className="col-md-4">
                             <label htmlFor="filterDate" className="form-label">Data</label>
-                            <input type="date" id="filterDate" className="form-control" value={filterDate} onChange={(e) => setFilterDate(e.target.value)} />
+                            <input type="date" id="filterDate" className="form-control" value={filterDate} onChange={(e) => setFilterDate(e.target.value)} style={{backgroundColor: '#4fc1e9', border: 'none', fontWeight:'bold'}}/>
                         </div>
                     </div>
                 </div>
@@ -219,7 +219,7 @@ export default function GerenciarReservas() {
                     <div className="row mt-4">
                         {reservas.map(reserva => (
                             <div key={reserva.id} className="col-12 col-md-6 col-lg-4 mb-4">
-                                <div className="card h-100 shadow-sm">
+                                <div className="card h-100 shadow-sm" style={{backgroundColor: 'rgb(3 7 18)', border:'2px solid #4fc1e9', color:'#fff'}}>
                                     <div className="card-body">
                                         <h5 className="card-title">Reserva: {reserva.titulo || 'Sem Título'}</h5>
                                         <p className="card-text">

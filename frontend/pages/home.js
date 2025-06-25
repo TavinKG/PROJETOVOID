@@ -25,7 +25,7 @@ export default function Home() {
         setMensagem(
           <>
             Você ainda não está em nenhum condomínio. Por favor,{' '}
-            <a href="#" onClick={(e) => { e.preventDefault(); setShowIngressoModal(true); }}>
+            <a href="#" onClick={(e) => { e.preventDefault(); setShowIngressoModal(true); }} style={{color: '#4fc1e9'}}>
               entre em um condomínio
             </a>.
           </>
@@ -34,11 +34,11 @@ export default function Home() {
         setMensagem(
           <>
             Você pode{' '}
-            <a href="#" onClick={(e) => { e.preventDefault(); setShowIngressoModal(true); }}>
+            <a href="#" onClick={(e) => { e.preventDefault(); setShowIngressoModal(true); }} style={{color: '#4fc1e9'}}>
               entrar em um condomínio existente
             </a>{' '}
             ou{' '}
-            <a href="#" onClick={(e) => { e.preventDefault(); setShowModal(true); }}>
+            <a href="#" onClick={(e) => { e.preventDefault(); setShowModal(true); }} style={{color: '#4fc1e9'}}>
               criar o perfil para um novo condomínio
             </a>.
           </>
@@ -187,6 +187,22 @@ export default function Home() {
 
   return (
     <div className="container mt-5">
+    {/* Backdrop escuro para modal */}
+    {(showModal || showIngressoModal) && (
+      <div
+        className="modal-backdrop fade show"
+        style={{
+          zIndex: 1040,
+          backgroundColor: 'rgba(0,0,0,0.5)',
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          width: '100vw',
+          height: '100vh',
+        }}
+      />
+    )}
+    <div className="container mt-5">
       <h1>Bem-vindo à Home!</h1>
       <p>{mensagem}</p>
 
@@ -196,7 +212,7 @@ export default function Home() {
           <h2>Seus Condomínios</h2>
           {condominiosUsuario.map(condominio => (
             <a key={condominio.id} href={`condo?id=${condominio.id}`} className="text-decoration-none">
-              <div className="card mb-3">
+              <div className="card mb-3" style={{backgroundColor: 'rgb(3 7 18)', color: '#fff', border: '2px solid #4fc1e9'}}>
                 <div className="card-body">
                   <h5 className="card-title">{condominio.nome}</h5>
                   <p className="card-text"><strong>CNPJ:</strong> {condominio.cnpj}</p>
@@ -214,16 +230,16 @@ export default function Home() {
 
       {/* Modal para ingresso no condomínio */}
       {showIngressoModal && (
-        <div className="modal fade show d-block" tabIndex="-1" role="dialog" aria-labelledby="modalIngressoCondominio" aria-hidden="true" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
-          <div className="modal-dialog" role="document">
-            <div className="modal-content">
+        <div className="modal fade show d-block" tabIndex="-1" role="dialog" aria-labelledby="modalIngressoCondominio" aria-hidden="true">
+          <div className="modal-dialog modal-dialog-centered" role="document" >
+            <div className="modal-content" style={{ backgroundColor: '#fff', color: 'rgb(3 7 18)', fontWeight: 'bold' }}>
               <div className="modal-header">
                 <h5 className="modal-title" id="modalIngressoCondominio">Buscar ou Ingressar em um Condomínio</h5>
                 <button type="button" className="btn-close" aria-label="Close" onClick={() => setShowIngressoModal(false)}></button>
               </div>
               <div className="modal-body">
                 <div className="mb-3">
-                  <label className="form-label" htmlFor="cnpjSearch">Buscar Condomínio pelo CNPJ</label>
+                  <label className="form-label mb-2" htmlFor="cnpjSearch">Buscar Condomínio pelo CNPJ</label>
                   <input
                     type="text"
                     id="cnpjSearch"
@@ -231,8 +247,12 @@ export default function Home() {
                     value={cnpjSearch}
                     onChange={(e) => setCnpjSearch(e.target.value)}
                     placeholder="Digite o CNPJ"
+                    onFocus={(e) => {
+                      e.target.style.boxShadow = 'none';
+                      e.target.style.border = '2px solid #4fc1e9'
+                    }}
                   />
-                  <button className="btn btn-info mt-2" onClick={handleSearchCondominio}>Buscar</button>
+                  <button className="btn btn-info mt-4" onClick={handleSearchCondominio} style={{ color: '#fff', fontWeight: 'bold', color: 'rgb(3 7 18)'}}>Buscar</button>
                 </div>
 
                 {condominioEncontrado && (
@@ -241,14 +261,9 @@ export default function Home() {
                     <p><strong>Nome:</strong> {condominioEncontrado.nome}</p>
                     <p><strong>CNPJ:</strong> {condominioEncontrado.cnpj}</p>
                     <p><strong>Endereço:</strong> {condominioEncontrado.endereco}</p>
-                    <button className="btn btn-success" onClick={handleIngressarCondominio}>Ingressar</button>
+                    <button className="btn btn-info" onClick={handleIngressarCondominio} style={{fontWeight: 'bold'}}>Ingressar</button>
                   </div>
                 )}
-              </div>
-              <div className="modal-footer">
-                <button type="button" className="btn btn-secondary" onClick={() => setShowIngressoModal(false)}>
-                  Fechar
-                </button>
               </div>
             </div>
           </div>
@@ -258,8 +273,8 @@ export default function Home() {
       {/* Modal de criação do condomínio (já existente) */}
       {showModal && (
         <div className="modal fade show d-block" tabIndex="-1" role="dialog" aria-labelledby="modalCriacaoCondominio" aria-hidden="true" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
-          <div className="modal-dialog" role="document">
-            <div className="modal-content">
+          <div className="modal-dialog modal-dialog-centered" role="document">
+            <div className="modal-content" style={{color: "rgb(3 7 18)", fontWeight: 'bold'}}>
               <div className="modal-header">
                 <h5 className="modal-title" id="modalCriacaoCondominio">Criar Condomínio</h5>
                 <button type="button" className="btn-close" aria-label="Close" onClick={() => setShowModal(false)}></button>
@@ -309,18 +324,14 @@ export default function Home() {
                       </select>
                     </div>
                   ))}
-                  <button type="submit" className="btn btn-info mt-3">Criar Condomínio</button>
+                  <button type="submit" className="btn btn-info mt-3 mb-3" style={{fontWeight: 'bold'}}>Criar Condomínio</button>
                 </form>
-              </div>
-              <div className="modal-footer">
-                <button type="button" className="btn btn-secondary" onClick={() => setShowModal(false)}>
-                  Fechar
-                </button>
               </div>
             </div>
           </div>
         </div>
       )}
+    </div>
     </div>
   );
 }

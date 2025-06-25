@@ -289,7 +289,7 @@ export default function AreasComuns() {
 
                 <button
                     type="button"
-                    className="btn btn-secondary mb-4 me-2"
+                    className="btn btn-secondary me-2"
                     onClick={() => router.push(`/condo?id=${condominioID}`)}
                 >
                     Voltar para o Condomínio
@@ -306,7 +306,7 @@ export default function AreasComuns() {
                     <div className="row mt-4">
                         {areasComuns.map(area => (
                             <div key={area.id} className="col-md-6 col-lg-4 mb-4">
-                                <div className="card h-100 shadow-sm">
+                                <div className="card h-100 shadow-sm" style={{backgroundColor: 'rgb(3 7 18)', color: '#fff', border: '2px solid #4fc1e9'}}>
                                     <div className="card-body">
                                         <h5 className="card-title">{area.nome}</h5>
                                         <p className="card-text">
@@ -320,6 +320,7 @@ export default function AreasComuns() {
                                             className="btn btn-info btn-sm mt-2" 
                                             disabled={!area.disponibilidade}
                                             onClick={() => handleReservarClick(area)}
+                                            style={{fontWeight: 'bold'}}
                                         >
                                             {area.disponibilidade ? 'Reservar' : 'Indisponível'}
                                         </button>
@@ -335,7 +336,7 @@ export default function AreasComuns() {
             {showReservaModal && selectedArea && (
                 <div className="modal fade show d-block" tabIndex="-1" role="dialog" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
                     <div className="modal-dialog modal-dialog-centered" role="document">
-                        <div className="modal-content">
+                        <div className="modal-content" style={{ backgroundColor: '#fff', color: 'rgb(3 7 18)', fontWeight: 'bold' }}>
                             <div className="modal-header">
                                 <h5 className="modal-title">Reservar {selectedArea.nome}</h5>
                                 <button type="button" className="btn-close" aria-label="Close" onClick={closeReservaModal}></button>
@@ -354,6 +355,28 @@ export default function AreasComuns() {
                                     />
                                 </div>
 
+                                <style jsx global>{`
+                                    .react-calendar__navigation button:disabled {
+                                       background-color:rgb(3 7 18);
+                                        color:#fff;
+                                    }
+                                    .react-calendar__navigation button {
+                                        min-width: 44px;
+                                        background: rgb(3 7 18);
+                                    }
+                                    .react-calendar__month-view__days__day--weekend {
+                                        color: rgb(3 7 18);
+                                    }
+                                    .react-calendar__tile--active {
+                                        background: #4fc1e9;
+                                        color: white;
+                                    }
+                                    .react-calendar__tile--active {
+                                        background: #4fc1e9;
+                                        color: white;
+                                    }
+                                `}</style>
+
                                 {/* HORÁRIOS DISPONÍVEIS/INDISPONÍVEIS */}
                                 <h6 className="text-center mb-3">
                                     Horários disponíveis para {' '}
@@ -364,9 +387,10 @@ export default function AreasComuns() {
                                         availableSlots.map((slot, index) => (
                                             <button
                                                 key={index}
-                                                className={`btn ${selectedSlot && selectedSlot.time === slot.time ? 'btn-primary' : (slot.isAvailable ? 'btn-outline-primary' : 'btn-secondary')}`}
+                                                className={`btn ${selectedSlot && selectedSlot.time === slot.time ? 'btn-info' : (slot.isAvailable ? 'btn-outline-info' : 'btn-secondary')}`}
                                                 disabled={!slot.isAvailable}
                                                 onClick={() => setSelectedSlot(slot)}
+                                                style={{color: 'rgb(3 7 18)'}}
                                             >
                                                 {slot.time}
                                             </button>
@@ -377,14 +401,12 @@ export default function AreasComuns() {
                                 </div>
                             </div>
                             <div className="modal-footer">
-                                <button type="button" className="btn btn-secondary" onClick={closeReservaModal}>
-                                    Fechar
-                                </button>
                                 <button 
                                     type="button" 
                                     className="btn btn-info" 
                                     disabled={!selectedSlot || !selectedSlot.isAvailable}
                                     onClick={handleConfirmarReservaClick}
+                                    style={{fontWeight: 'bold'}}
                                 >
                                     Confirmar Reserva
                                 </button>
@@ -398,7 +420,7 @@ export default function AreasComuns() {
             {showConfirmacaoModal && selectedArea && selectedDate && selectedSlot && (
                 <div className="modal fade show d-block" tabIndex="-1" role="dialog" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
                     <div className="modal-dialog modal-dialog-centered" role="document">
-                        <div className="modal-content">
+                        <div className="modal-content" style={{ backgroundColor: '#fff', color: 'rgb(3 7 18)'}}>
                             <div className="modal-header">
                                 <h5 className="modal-title">Confirmar Reserva de {selectedArea.nome}</h5>
                                 <button type="button" className="btn-close" aria-label="Close" onClick={closeConfirmacaoModal}></button>

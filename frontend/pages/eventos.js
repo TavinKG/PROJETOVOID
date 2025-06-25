@@ -180,7 +180,7 @@ export default function Eventos() {
                 <div className="d-flex flex-wrap align-items-center mb-4">
                     <button
                         type="button"
-                        className="btn btn-secondary me-2 mb-2"
+                        className="btn btn-secondary me-2"
                         onClick={() => router.push(`/condo?id=${condominioID}`)}
                     >
                         Voltar para o Condomínio
@@ -189,7 +189,7 @@ export default function Eventos() {
                     {tipoUsuario === 'Administrador' && (
                         <button
                             type="button"
-                            className="btn btn-primary me-2 mb-2"
+                            className="btn btn-info me-2"
                             onClick={() => setShowAgendarModal(true)} // Abre modal de agendamento
                         >
                             Agendar Novo Evento
@@ -211,9 +211,9 @@ export default function Eventos() {
                     <div className="row mt-4">
                         {eventos.map(evento => (
                             <div key={evento.id} className="col-12 col-md-6 col-lg-4 mb-4">
-                                <div className="card h-100 shadow-sm">
+                                <div className="card h-100 shadow-sm" style={{backgroundColor: 'rgb(3 7 18)', color: '#fff', border: '2px solid #4fc1e9'}}>
                                     <div className="card-body">
-                                        <h5 className="card-title">{evento.nome}</h5>
+                                        <h5 className="card-title mb-4">{evento.nome}</h5>
                                         <p className="card-text">
                                             <strong>Data e Hora:</strong> {formatDateTime(evento.data_hora)}
                                         </p>
@@ -253,7 +253,7 @@ export default function Eventos() {
             {showAgendarModal && tipoUsuario === 'Administrador' && (
                 <div className="modal fade show d-block" tabIndex="-1" role="dialog" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
                     <div className="modal-dialog modal-dialog-centered" role="document">
-                        <div className="modal-content">
+                        <div className="modal-content" style={{ backgroundColor: '#fff', color: 'rgb(3 7 18)'}}>
                             <div className="modal-header">
                                 <h5 className="modal-title">Agendar Novo Evento</h5>
                                 <button type="button" className="btn-close" aria-label="Close" onClick={() => setShowAgendarModal(false)}></button>
@@ -294,6 +294,11 @@ export default function Eventos() {
                                             required
                                         />
                                     </div>
+                                    <style jsx global>{`
+                                        input[type="date"]::-webkit-calendar-picker-indicator {
+                                            filter: invert(1); /* deixa o ícone branco */
+                                        }
+                                    `}</style>
                                     <div className="mb-3">
                                         <label htmlFor="eventoHora" className="form-label">Hora</label>
                                         <input
@@ -305,6 +310,11 @@ export default function Eventos() {
                                             required
                                         />
                                     </div>
+                                    <style jsx global>{`
+                                        input[type="time"]::-webkit-calendar-picker-indicator {
+                                            filter: invert(1); /* deixa o ícone branco */
+                                        }
+                                    `}</style>
                                     <div className="mb-3">
                                         <label htmlFor="eventoDescricao" className="form-label">Descrição (opcional)</label>
                                         <textarea
@@ -316,11 +326,10 @@ export default function Eventos() {
                                         ></textarea>
                                     </div>
                                     <div className="d-flex justify-content-end mt-4">
-                                        <button type="button" className="btn btn-secondary me-2" onClick={() => setShowAgendarModal(false)}>
-                                            Cancelar
-                                        </button>
-                                        <button type="submit" className="btn btn-primary">
-                                            Agendar Evento
+                                        <button type="submit" className="btn btn-info" style={{color:'rgb(3 7 18)'}}>
+                                            <strong>
+                                                Agendar Evento
+                                            </strong>
                                         </button>
                                     </div>
                                 </form>

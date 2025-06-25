@@ -231,7 +231,7 @@ export default function FotosGaleria() {
                 <div className="d-flex flex-wrap align-items-center mb-4">
                     <button
                         type="button"
-                        className="btn btn-secondary me-2 mb-2"
+                        className="btn btn-secondary me-2"
                         onClick={() => router.push(`/galeria?id=${condominioId}`)} 
                     >
                         Voltar para Galerias
@@ -240,7 +240,7 @@ export default function FotosGaleria() {
                     {(tipoUsuario === 'Administrador' || tipoUsuario === 'Morador') && ( 
                         <button
                             type="button"
-                            className="btn btn-primary me-2 mb-2"
+                            className="btn btn-info me-2"
                             onClick={() => setShowUploadModal(true)}
                         >
                             Adicionar Foto
@@ -309,7 +309,7 @@ export default function FotosGaleria() {
             {showUploadModal && (tipoUsuario === 'Administrador' || tipoUsuario === 'Morador') && (
                 <div className="modal fade show d-block" tabIndex="-1" role="dialog" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
                     <div className="modal-dialog modal-dialog-centered" role="document">
-                        <div className="modal-content">
+                        <div className="modal-content" style={{color:'rgb(3 7 18)'}}>
                             <div className="modal-header">
                                 <h5 className="modal-title">Adicionar Foto à Galeria "{galeriaNome}"</h5>
                                 <button type="button" className="btn-close" aria-label="Close" onClick={() => setShowUploadModal(false)}></button>
@@ -340,11 +340,10 @@ export default function FotosGaleria() {
                                     </div>
                                     {uploadError && <p className="text-danger mt-2">{uploadError}</p>}
                                     <div className="d-flex justify-content-end mt-4">
-                                        <button type="button" className="btn btn-secondary me-2" onClick={() => setShowUploadModal(false)}>
-                                            Cancelar
-                                        </button>
-                                        <button type="submit" className="btn btn-primary" disabled={uploadLoading || !selectedFile}>
-                                            {uploadLoading ? 'Enviando...' : 'Fazer Upload'}
+                                        <button type="submit" className="btn btn-info" disabled={uploadLoading || !selectedFile}>
+                                            <strong>
+                                                {uploadLoading ? 'Enviando...' : 'Fazer Upload'}
+                                            </strong>
                                         </button>
                                     </div>
                                 </form>
@@ -358,7 +357,7 @@ export default function FotosGaleria() {
             {showImageViewer && (
                 <div className="modal fade show d-block" tabIndex="-1" role="dialog" style={{ backgroundColor: 'rgba(0,0,0,0.8)' }}>
                     <div className="modal-dialog modal-dialog-centered modal-xl" role="document"> {/* modal-xl para imagem grande */}
-                        <div className="modal-content">
+                        <div className="modal-content" style={{color:'rgb(3 7 18)'}}>
                             <div className="modal-header">
                                 <h5 className="modal-title">{currentImageDescription}</h5>
                                 <button type="button" className="btn-close" aria-label="Close" onClick={closeImageViewer}></button>
@@ -370,11 +369,6 @@ export default function FotosGaleria() {
                                     className="img-fluid" 
                                     style={{ maxHeight: '80vh', maxWidth: '100%', objectFit: 'contain' }} // Ajusta imagem ao modal
                                 />
-                            </div>
-                            <div className="modal-footer">
-                                <button type="button" className="btn btn-secondary" onClick={closeImageViewer}>
-                                    Fechar
-                                </button>
                             </div>
                         </div>
                     </div>

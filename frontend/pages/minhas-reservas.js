@@ -111,7 +111,7 @@ export default function MinhasReservas() {
                 {/* Botão de Voltar para o Condomínio */}
                 <button
                     type="button"
-                    className="btn btn-secondary mb-4 me-2"
+                    className="btn btn-secondary me-2"
                     onClick={() => router.push(`/condo?id=${condominioID}`)}
                 >
                     Voltar para o Condomínio
@@ -155,9 +155,9 @@ export default function MinhasReservas() {
 
                             return (
                                 <div key={reserva.id} className="col-12 col-md-6 col-lg-4 mb-4">
-                                    <div className="card h-100 shadow-sm">
+                                    <div className="card h-100 shadow-sm" style={{backgroundColor: 'rgb(3 7 18)', color: '#fff', border: '2px solid #4fc1e9'}}>
                                         <div className="card-body">
-                                            <h5 className="card-title">Reserva: {reserva.titulo || 'Sem Título'}</h5>
+                                            <h5 className="card-title mb-4">Reserva: {reserva.titulo || 'Sem Título'}</h5>
                                             <p className="card-text">
                                                 <strong>Área:</strong> {reserva.areas_comuns ? reserva.areas_comuns.nome : 'N/A'}
                                             </p>

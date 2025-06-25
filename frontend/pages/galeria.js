@@ -139,7 +139,7 @@ export default function Galeria() {
                 <div className="d-flex flex-wrap align-items-center mb-4">
                     <button
                         type="button"
-                        className="btn btn-secondary me-2 mb-2"
+                        className="btn btn-secondary me-2"
                         onClick={() => router.push(`/condo?id=${condominioID}`)}
                     >
                         Voltar para o Condomínio
@@ -148,7 +148,7 @@ export default function Galeria() {
                     {tipoUsuario === 'Administrador' && (
                         <button
                             type="button"
-                            className="btn btn-primary me-2 mb-2"
+                            className="btn btn-info me-2"
                             onClick={() => setShowCriarGaleriaModal(true)} // Abre modal de criação
                         >
                             Criar Nova Galeria
@@ -171,7 +171,7 @@ export default function Galeria() {
                         {galerias.map(galeria => (
                             <div key={galeria.id} className="col-12 col-md-6 col-lg-4 mb-4">
                                 <Link href={`/galeria/${galeria.id}/fotos?condominioId=${condominioID}`} className="text-decoration-none text-dark">
-                                    <div className="card h-100 shadow-sm">
+                                    <div className="card h-100 shadow-sm" >
                                         {galeria.foto_capa_url && (
                                             <img 
                                                 src={galeria.foto_capa_url} 
@@ -199,7 +199,7 @@ export default function Galeria() {
             {showCriarGaleriaModal && tipoUsuario === 'Administrador' && (
                 <div className="modal fade show d-block" tabIndex="-1" role="dialog" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
                     <div className="modal-dialog modal-dialog-centered" role="document">
-                        <div className="modal-content">
+                        <div className="modal-content" style={{ backgroundColor: '#fff', color: 'rgb(3 7 18)', fontWeight: 'bold' }}>
                             <div className="modal-header">
                                 <h5 className="modal-title">Criar Nova Galeria de Fotos</h5>
                                 <button type="button" className="btn-close" aria-label="Close" onClick={() => setShowCriarGaleriaModal(false)}></button>
@@ -219,11 +219,10 @@ export default function Galeria() {
                                         />
                                     </div>
                                     <div className="d-flex justify-content-end mt-4">
-                                        <button type="button" className="btn btn-secondary me-2" onClick={() => setShowCriarGaleriaModal(false)}>
-                                            Cancelar
-                                        </button>
-                                        <button type="submit" className="btn btn-primary">
-                                            Criar Galeria
+                                        <button type="submit" className="btn btn-info">
+                                            <strong>
+                                                Criar Galeria
+                                            </strong>
                                         </button>
                                     </div>
                                 </form>

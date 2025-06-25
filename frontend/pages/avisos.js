@@ -143,7 +143,7 @@ export default function Avisos() {
                 {modalOpen && (
                     <div className="modal d-block" tabIndex="-1" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
                         <div className="modal-dialog modal-dialog-centered">
-                            <div className="modal-content">
+                            <div className="modal-content" style={{ backgroundColor: '#fff', color: 'rgb(3 7 18)'}}>
                                 <div className="modal-header">
                                     <h5 className="modal-title">Criar Novo Aviso</h5>
                                     <button
@@ -185,18 +185,11 @@ export default function Avisos() {
                                 <div className="modal-footer">
                                     <button
                                         type="button"
-                                        className="btn btn-secondary"
-                                        onClick={() => setModalOpen(false)}
-                                    >
-                                        Cancelar
-                                    </button>
-                                    <button
-                                        type="button"
                                         className="btn btn-info"
                                         onClick={criarAviso}
-                                    >
+                                    ><strong>
                                         Salvar Aviso
-                                    </button>
+                                    </strong></button>
                                 </div>
                             </div>
                         </div>
@@ -214,9 +207,9 @@ export default function Avisos() {
                             });
 
                             return (
-                                <div key={aviso.id} className="card mb-3 shadow-sm">
+                                <div key={aviso.id} className="card mb-3 shadow-sm" style={{backgroundColor: 'rgb(3 7 18)', color: '#fff', border: '2px solid #4fc1e9'}}>
                                     <div className="card-body">
-                                        <h5 className="card-title">{aviso.titulo}</h5>
+                                        <h5 className="card-title mb-4">{aviso.titulo}</h5>
                                         <p className="card-text mb-1">
                                             <strong>Autor:</strong> {aviso.usuario ? aviso.usuario.nome : 'Desconhecido'}
                                         </p>

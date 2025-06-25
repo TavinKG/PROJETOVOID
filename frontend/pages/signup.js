@@ -101,10 +101,10 @@ export default function Signup() {
       <Head>
         <title>Cadastro - PROJETO VOID</title>
       </Head>
-      <div className="d-flex flex-column align-items-center justify-content-center min-vh-100 bg-light">
-        <div className="card shadow p-4 w-100" style={{ maxWidth: '600px' }}>
+      <div className="d-flex flex-column align-items-center justify-content-center min-vh-100">
+        <div className="card shadow p-4 w-100" style={{ maxWidth: '600px', backgroundColor: 'rgb(31 41 55)', color: '#fff', fontWeight: 'bold' }}>
           <div className="text-center mb-4">
-            <img src="/logos/logo-header1.png" alt="VOID Logo" className="mb-4" style={{ height: '50px' }} />
+            <img src="/logos/icone-escuro.png" alt="VOID Logo" className="mb-2" style={{ height: '100px' }} />
             <h2 className="mb-0">Cadastro</h2>
           </div>
 
@@ -229,8 +229,9 @@ export default function Signup() {
             </div>
             <button
               type="submit"
-              className="btn btn-dark w-100 py-2 mt-3"
+              className="btn btn-info w-100 py-2 mt-3"
               disabled={loading}
+              style={{fontWeight: 'bold'}}
             >
               {loading ? 'CADASTRANDO...' : 'CADASTRAR'}
             </button>
@@ -238,7 +239,7 @@ export default function Signup() {
 
             <p className="text-center mt-3 mb-0">
               Já tem uma conta?{' '}
-              <Link href="/login" className="text-decoration-none">
+              <Link href="/login" className="text-decoration-none" style={{color: '#4fc1e9'}}>
                 Faça login aqui
               </Link>
             </p>

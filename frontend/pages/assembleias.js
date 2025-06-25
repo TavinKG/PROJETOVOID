@@ -246,7 +246,7 @@ export default function Assembleias() {
                 <div className="d-flex flex-wrap align-items-center mb-4">
                     <button
                         type="button"
-                        className="btn btn-secondary me-2 mb-2"
+                        className="btn btn-secondary me-2"
                         onClick={() => router.push(`/condo?id=${condominioID}`)}
                     >
                         Voltar para o Condomínio
@@ -255,7 +255,7 @@ export default function Assembleias() {
                     {tipoUsuario === 'Administrador' && (
                         <button
                             type="button"
-                            className="btn btn-info me-2 mb-2"
+                            className="btn btn-info me-2"
                             onClick={() => setShowAgendarModal(true)}
                         >
                             Agendar Nova Assembleia
@@ -277,9 +277,9 @@ export default function Assembleias() {
                     <div className="row mt-4">
                         {assembleias.map(assembleia => (
                             <div key={assembleia.id} className="col-12 col-md-6 col-lg-4 mb-4">
-                                <div className="card h-100 shadow-sm">
+                                <div className="card h-100 shadow-sm" style={{backgroundColor: 'rgb(3 7 18)', color: '#fff', border: '2px solid #4fc1e9'}}>
                                     <div className="card-body">
-                                        <h5 className="card-title">{assembleia.titulo}</h5>
+                                        <h5 className="card-title mb-4">{assembleia.titulo}</h5>
                                         <p className="card-text">
                                             <strong>Data e Hora:</strong> {formatDateTime(assembleia.data_hora)}
                                         </p>
@@ -312,6 +312,7 @@ export default function Assembleias() {
                                                 <button 
                                                     className="btn btn-info btn-sm me-2"
                                                     onClick={() => handleVerParticipantesClick(assembleia.id)}
+                                                    style={{fontWeight:'bold'}}
                                                 >
                                                     Ver Participantes
                                                 </button>
@@ -329,7 +330,7 @@ export default function Assembleias() {
             {showAgendarModal && tipoUsuario === 'Administrador' && (
                 <div className="modal fade show d-block" tabIndex="-1" role="dialog" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
                     <div className="modal-dialog modal-dialog-centered" role="document">
-                        <div className="modal-content">
+                        <div className="modal-content" style={{color:'rgb(3 7 18)'}}>
                             <div className="modal-header">
                                 <h5 className="modal-title">Agendar Nova Assembleia</h5>
                                 <button type="button" className="btn-close" aria-label="Close" onClick={() => setShowAgendarModal(false)}></button>
@@ -359,6 +360,11 @@ export default function Assembleias() {
                                             required
                                         />
                                     </div>
+                                    <style jsx global>{`
+                                        input[type="date"]::-webkit-calendar-picker-indicator {
+                                            filter: invert(1); /* deixa o ícone branco */
+                                        }
+                                    `}</style>
                                     <div className="mb-3">
                                         <label htmlFor="assembleiaTime" className="form-label">Hora</label>
                                         <input
@@ -370,6 +376,11 @@ export default function Assembleias() {
                                             required
                                         />
                                     </div>
+                                    <style jsx global>{`
+                                        input[type="time"]::-webkit-calendar-picker-indicator {
+                                            filter: invert(1); /* deixa o ícone branco */
+                                        }
+                                    `}</style>
                                     <div className="mb-3">
                                         <label htmlFor="assembleiaDescription" className="form-label">Descrição (opcional)</label>
                                         <textarea
@@ -384,7 +395,7 @@ export default function Assembleias() {
                                         <button type="button" className="btn btn-secondary me-2" onClick={() => setShowAgendarModal(false)}>
                                             Cancelar
                                         </button>
-                                        <button type="submit" className="btn btn-primary">
+                                        <button type="submit" className="btn btn-info" style={{fontWeight:'bold'}}>
                                             Agendar Assembleia
                                         </button>
                                     </div>
@@ -399,7 +410,7 @@ export default function Assembleias() {
             {showParticipantesModal && tipoUsuario === 'Administrador' && (
                 <div className="modal fade show d-block" tabIndex="-1" role="dialog" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
                     <div className="modal-dialog modal-dialog-centered" role="document">
-                        <div className="modal-content">
+                        <div className="modal-content" style={{color:'rgb(3 7 18)'}}>
                             <div className="modal-header">
                                 <h5 className="modal-title">Participantes da Assembleia</h5>
                                 <button type="button" className="btn-close" aria-label="Close" onClick={closeParticipantesModal}></button>
@@ -419,11 +430,6 @@ export default function Assembleias() {
                                         ))}
                                     </ul>
                                 )}
-                            </div>
-                            <div className="modal-footer">
-                                <button type="button" className="btn btn-secondary" onClick={closeParticipantesModal}>
-                                    Fechar
-                                </button>
                             </div>
                         </div>
                     </div>
