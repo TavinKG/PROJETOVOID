@@ -189,6 +189,15 @@ export default function Condo() {
                         Galeria de Fotos
                     </button>
 
+                    {/* NOVO BOTÃO: Eventos */}
+                    <button
+                        type="button"
+                        className="btn btn-info me-2 mb-2" // Usando 'primary' para destaque, pode mudar
+                        onClick={() => router.push(`/eventos?id=${condominioID}`)}
+                    >
+                        Eventos
+                    </button>
+
                     {/* Botão de Avisos */}
                     <button
                         type="button"
