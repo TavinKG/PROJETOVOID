@@ -1,5 +1,8 @@
 const supabase = require('../config/supabase');
 const Usuario = require('../models/Usuario'); // Importando a classe Usuario, se necessário
+const bcrypt = require('bcrypt');
+
+const saltRounds = 10;
 
 class UsuarioDAO {
   // Função para criar um novo usuário
@@ -7,10 +10,12 @@ class UsuarioDAO {
     // Atributos passados no objeto `usuario`
     const { nome, email, senha, cpf, dataNascimento, telefone, tipoUsuario } = usuario;
 
+    const hashedPassword = await bcrypt.hash(senha, saltRounds);
+
     // Inserindo o registro na tabela "Usuario"
     const { data, error } = await supabase
       .from('usuario')
-      .insert([{ nome, email, senha, cpf, data_nascimento: dataNascimento, telefone, tipo_usuario: tipoUsuario }])
+      .insert([{ nome, email, senha: hashedPassword, cpf, data_nascimento: dataNascimento, telefone, tipo_usuario: tipoUsuario }])
       .select();
 
     if (error) throw new Error(error.message);
@@ -26,10 +31,15 @@ class UsuarioDAO {
       .from('usuario')
       .select('*')
       .eq('email', email)
-      .eq('senha', senha)
       .single(); // Usando .single() para garantir que retorne no máximo 1 resultado
 
     if (error) throw new Error("Credenciais inválidas!");
+
+    const passwordMatch = await bcrypt.compare(senha, data.senha);
+
+    if (!passwordMatch) {
+        throw new Error("E-mail ou senha incorretos."); // Senha não corresponde ao hash
+    }
 
     return data; // Retorna os dados do usuário autenticado
   }
