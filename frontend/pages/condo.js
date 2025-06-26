@@ -13,8 +13,8 @@ export default function Condo() {
     const [condominioID, setCondominioId] = useState(null);
     const [condominioNome, setCondominioNome] = useState(''); // NOVO ESTADO: para armazenar o nome do condomínio
     const [condominiosPendentes, setCondominiosPendentes] = useState([]);
-    const [notificacoesToggle, setNotificacoesToggle] = useState(false);
     const [tipoUsuario, setTipoUsuario] = useState(null);
+    const [showNotificacoesModal, setNotificacoesModal] = useState(false);
 
     const fetchCondominiosPendentes = useCallback(async () => {
         if (!condominioID) return;
@@ -129,12 +129,7 @@ export default function Condo() {
                             <button
                                 type="button"
                                 className="btn btn-primary me-2"
-                                onClick={() => {
-                                    setNotificacoesToggle(!notificacoesToggle);
-                                    if (!notificacoesToggle) {
-                                        fetchCondominiosPendentes();
-                                    }
-                                }}
+                                onClick={() => setNotificacoesModal(true)}
                                 style={{color:'#fff', background:'none', border:'none'}}
                             >
                                 Gerenciar Ingressos ({condominiosPendentes.length})
@@ -233,41 +228,49 @@ export default function Condo() {
                     {condominioNome ? `Condomínio ${condominioNome}` : 'Condomínio'}
                 </h1>
 
-                {/* Seção de Solicitações (visível se notificacoesToggle for true) */}
-                {notificacoesToggle && tipoUsuario === 'Administrador' && (
-                    <div className="mt-4">
-                        <h2>Solicitações de Ingresso</h2>
-                        {condominiosPendentes.length > 0 ? (
-                            condominiosPendentes.map((usuario) => (
-                                <div key={usuario.id} className="card mb-3 mt-4 shadow-sm rounded-4" style={{backgroundColor: 'rgb(3 7 18)', color: '#fff', border: '2px solid #4fc1e9'}}>
-                                    <div className="card-body">
-                                        <h5 className="card-title mb-4">{usuario.nome}</h5>
-                                        <p className="card-text mb-1"><strong>Email:</strong> {usuario.email}</p>
-                                        <p className="card-text mb-1"><strong>CPF:</strong> {usuario.cpf}</p>
-                                        <p className="card-text mb-1"><strong>Telefone:</strong> {usuario.telefone}</p>
-                                        <p className="card-text mb-2"><strong>Tipo de Usuário:</strong> {usuario.tipo_usuario}</p>
-                                        <div className="d-flex justify-content-end">
-                                            <button
-                                                type="button"
-                                                className="btn btn-success me-2 rounded-pill"
-                                                onClick={() => alterarStatusVinculo(usuario.id, 1)}
-                                            >
-                                                Aceitar
-                                            </button>
-                                            <button
-                                                type="button"
-                                                className="btn btn-danger rounded-pill"
-                                                onClick={() => alterarStatusVinculo(usuario.id, 2)}
-                                            >
-                                                Recusar
-                                            </button>
-                                        </div>
-                                    </div>
+                {showNotificacoesModal && (tipoUsuario === 'Administrador') && (
+                    <div className="modal fade show d-block" tabIndex="-1" role="dialog" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
+                        <div className="modal-dialog modal-dialog-centered" role="document">
+                            <div className="modal-content" style={{color:'rgb(3 7 18)'}}>
+                                <div className="modal-header">
+                                    <h5 className="modal-title">Solicitações de Ingresso</h5>
+                                    <button type="button" className="btn-close" aria-label="Close" onClick={() => setNotificacoesModal(false)}></button>
                                 </div>
-                            ))
-                        ) : (
-                            <p className="text-info">Não há solicitações de ingresso pendentes no momento.</p>
-                        )}
+                                <div className="modal-body">
+                                    {condominiosPendentes.length > 0 ? (
+                                        condominiosPendentes.map((usuario) => (
+                                            <div key={usuario.id} className="card mb-3 mt-4 shadow-sm rounded-4" style={{backgroundColor: 'rgb(3 7 18)', color: '#fff', border: '2px solid #4fc1e9'}}>
+                                                <div className="card-body">
+                                                    <h5 className="card-title mb-4">{usuario.nome}</h5>
+                                                    <p className="card-text mb-1"><strong>Email:</strong> {usuario.email}</p>
+                                                    <p className="card-text mb-1"><strong>CPF:</strong> {usuario.cpf}</p>
+                                                    <p className="card-text mb-1"><strong>Telefone:</strong> {usuario.telefone}</p>
+                                                    <p className="card-text mb-2"><strong>Tipo de Usuário:</strong> {usuario.tipo_usuario}</p>
+                                                    <div className="d-flex justify-content-end">
+                                                        <button
+                                                            type="button"
+                                                            className="btn btn-success me-2 rounded-pill"
+                                                            onClick={() => alterarStatusVinculo(usuario.id, 1)}
+                                                        >
+                                                            Aceitar
+                                                        </button>
+                                                        <button
+                                                            type="button"
+                                                            className="btn btn-danger rounded-pill"
+                                                            onClick={() => alterarStatusVinculo(usuario.id, 2)}
+                                                        >
+                                                            Recusar
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ))
+                                    ) : (
+                                        <p className="text-dark">Não há solicitações de ingresso pendentes no momento.</p>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 )}
             </div>
