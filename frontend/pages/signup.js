@@ -45,8 +45,28 @@ export default function Signup() {
         setLoading(false);
         return;
     }
-    if (formData.senha.length < 6) {
-        setError('A senha deve ter no mínimo 6 caracteres.');
+    if (formData.senha.length < 8) { // Aumentado para 8 caracteres para senhas fortes
+        setError('A senha deve ter no mínimo 8 caracteres.');
+        setLoading(false);
+        return;
+    }
+    if (!/[A-Z]/.test(formData.senha)) {
+        setError('A senha deve conter pelo menos uma letra maiúscula.');
+        setLoading(false);
+        return;
+    }
+    if (!/[a-z]/.test(formData.senha)) {
+        setError('A senha deve conter pelo menos uma letra minúscula.');
+        setLoading(false);
+        return;
+    }
+    if (!/[0-9]/.test(formData.senha)) {
+        setError('A senha deve conter pelo menos um número.');
+        setLoading(false);
+        return;
+    }
+    if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(formData.senha)) { // Exemplo de caracteres especiais
+        setError('A senha deve conter pelo menos um caractere especial (!@#$%^&*...).');
         setLoading(false);
         return;
     }
