@@ -5,6 +5,7 @@ import Cookies from 'js-cookie';
 import { useRouter } from 'next/router';
 import LogoutButton from '../components/LogoutButton';
 import Head from 'next/head';
+import Image from 'next/image';
 
 export default function Condo() {
     const router = useRouter();
@@ -107,106 +108,130 @@ export default function Condo() {
                 <title>{condominioNome ? `${condominioNome} - Condomínio` : 'Página do Condomínio'}</title>
             </Head>
 
+            <nav className="navbar navbar-expand-lg shadow-sm" style={{height:'10vh'}}> {/* Usando bg-light, ajuste para sua cor padrão */}
+                <div className="container-fluid">
+                    {/* Logo na Esquerda */}
+                    <a className="navbar-brand d-flex align-items-center" href="/home">
+                        <Image 
+                            src="/logos/horizontal-escuro-cheio.png" // Ajuste o src para o caminho real da sua logo
+                            alt="VOID Logo" 
+                            width={170} 
+                            height={170} 
+                            priority={true} 
+                            style={{marginLeft:'125px', objectFit: 'contain'}} // objectFit para ajustar imagem
+                        />
+                    </a>
+    
+                    {/* Botões alinhados à Direita */}
+                    <div className="d-flex align-items-center" style={{marginRight:'125px'}}>
+                        {/* Botão de Notificações (visível apenas para Administrador) */}
+                        {tipoUsuario === 'Administrador' && (
+                            <button
+                                type="button"
+                                className="btn btn-primary me-2"
+                                onClick={() => {
+                                    setNotificacoesToggle(!notificacoesToggle);
+                                    if (!notificacoesToggle) {
+                                        fetchCondominiosPendentes();
+                                    }
+                                }}
+                                style={{color:'#fff', background:'none', border:'none'}}
+                            >
+                                Gerenciar Ingressos ({condominiosPendentes.length})
+                            </button>
+                        )}
+
+                        {/* Botão para Áreas Comuns */}
+                        <button
+                            type="button"
+                            className="btn btn-info me-2"
+                            onClick={() => router.push(`/areas-comuns?id=${condominioID}`)}
+                            style={{color:'#fff', background:'none', border:'none'}}
+                        >
+                            Áreas Comuns
+                        </button>
+
+                        {/* Botão para Minhas Reservas (visível apenas para Morador) */}
+                        {tipoUsuario === 'Morador' && (
+                            <button
+                                type="button"
+                                className="btn btn-info me-2"
+                                onClick={() => router.push(`/minhas-reservas?condominioId=${condominioID}`)}
+                                style={{color:'#fff', background:'none', border:'none'}}
+                            >
+                                Minhas Reservas
+                            </button>
+                        )}
+
+                        {/* Botão para Gerenciar Reservas (visível apenas para Administrador) */}
+                        {tipoUsuario === 'Administrador' && (
+                            <button
+                                type="button"
+                                className="btn btn-info me-2"
+                                onClick={() => router.push(`/gerenciar-reservas?id=${condominioID}`)}
+                                style={{color:'#fff', background:'none', border:'none'}}
+                            >
+                                Gerenciar Reservas
+                            </button>
+                        )}
+
+                        {/* Botão Assembleias */}
+                        <button
+                            type="button"
+                            className="btn btn-info me-2"
+                            onClick={() => router.push(`/assembleias?id=${condominioID}`)}
+                            style={{color:'#fff', background:'none', border:'none'}}
+                        >
+                            Assembleias
+                        </button>
+
+                        {/* NOVO BOTÃO: Galeria de Fotos */}
+                        <button
+                            type="button"
+                            className="btn btn-info me-2" // Escolha uma cor apropriada
+                            onClick={() => router.push(`/galeria?id=${condominioID}`)}
+                            style={{color:'#fff', background:'none', border:'none'}}
+                        >
+                            Galeria de Fotos
+                        </button>
+
+                        {/* NOVO BOTÃO: Eventos */}
+                        <button
+                            type="button"
+                            className="btn btn-info me-2" // Usando 'primary' para destaque, pode mudar
+                            onClick={() => router.push(`/eventos?id=${condominioID}`)}
+                            style={{color:'#fff', background:'none', border:'none'}}
+                        >
+                            Eventos
+                        </button>
+
+                        {/* Botão de Avisos */}
+                        <button
+                            type="button"
+                            className="btn btn-info me-5"
+                            onClick={() => router.push(`/avisos?id=${condominioID}`)}
+                            style={{color:'#fff', background:'none', border:'none'}}
+                        >
+                            Avisos
+                        </button>
+                        <button
+                            type="button"
+                            className="btn btn-secondary me-3 rounded-pill"
+                            onClick={() => router.push('/home')}
+                        >
+                            Voltar
+                        </button>
+                        <LogoutButton />
+
+                    </div>
+                </div>
+            </nav>
+
             <div className="container mt-5">
                 {/* NOVO: Título principal da página com o nome do condomínio */}
-                <h1 className="mb-4">
+                <h1 className="mb-4 text-center">
                     {condominioNome ? `Condomínio ${condominioNome}` : 'Condomínio'}
                 </h1>
-
-                {/* Container para os botões de ação */}
-                <div className="d-flex flex-wrap align-items-center mb-4">
-                    {/* Botão de Voltar para Home */}
-                    <button
-                        type="button"
-                        className="btn btn-secondary me-2 mb-2"
-                        onClick={() => router.push('/home')}
-                    >
-                        Voltar para Home
-                    </button>
-
-                    {/* Botão de Notificações (visível apenas para Administrador) */}
-                    {tipoUsuario === 'Administrador' && (
-                        <button
-                            type="button"
-                            className="btn btn-primary me-2 mb-2"
-                            onClick={() => {
-                                setNotificacoesToggle(!notificacoesToggle);
-                                if (!notificacoesToggle) {
-                                    fetchCondominiosPendentes();
-                                }
-                            }}
-                        >
-                            Notificações ({condominiosPendentes.length})
-                        </button>
-                    )}
-
-                    {/* Botão para Áreas Comuns */}
-                    <button
-                        type="button"
-                        className="btn btn-info me-2 mb-2"
-                        onClick={() => router.push(`/areas-comuns?id=${condominioID}`)}
-                    >
-                        Áreas Comuns
-                    </button>
-
-                    {/* Botão para Minhas Reservas (visível apenas para Morador) */}
-                    {tipoUsuario === 'Morador' && (
-                        <button
-                            type="button"
-                            className="btn btn-info me-2 mb-2"
-                            onClick={() => router.push(`/minhas-reservas?condominioId=${condominioID}`)}
-                        >
-                            Minhas Reservas
-                        </button>
-                    )}
-
-                    {/* Botão para Gerenciar Reservas (visível apenas para Administrador) */}
-                    {tipoUsuario === 'Administrador' && (
-                        <button
-                            type="button"
-                            className="btn btn-info me-2 mb-2"
-                            onClick={() => router.push(`/gerenciar-reservas?id=${condominioID}`)}
-                        >
-                            Gerenciar Reservas
-                        </button>
-                    )}
-
-                    {/* Botão Assembleias */}
-                    <button
-                        type="button"
-                        className="btn btn-info me-2 mb-2"
-                        onClick={() => router.push(`/assembleias?id=${condominioID}`)}
-                    >
-                        Assembleias
-                    </button>
-
-                    {/* NOVO BOTÃO: Galeria de Fotos */}
-                    <button
-                        type="button"
-                        className="btn btn-info me-2 mb-2" // Escolha uma cor apropriada
-                        onClick={() => router.push(`/galeria?id=${condominioID}`)}
-                    >
-                        Galeria de Fotos
-                    </button>
-
-                    {/* NOVO BOTÃO: Eventos */}
-                    <button
-                        type="button"
-                        className="btn btn-info me-2 mb-2" // Usando 'primary' para destaque, pode mudar
-                        onClick={() => router.push(`/eventos?id=${condominioID}`)}
-                    >
-                        Eventos
-                    </button>
-
-                    {/* Botão de Avisos */}
-                    <button
-                        type="button"
-                        className="btn btn-info mb-2"
-                        onClick={() => router.push(`/avisos?id=${condominioID}`)}
-                    >
-                        Avisos
-                    </button>
-                </div>
 
                 {/* Seção de Solicitações (visível se notificacoesToggle for true) */}
                 {notificacoesToggle && tipoUsuario === 'Administrador' && (
@@ -214,7 +239,7 @@ export default function Condo() {
                         <h2>Solicitações de Ingresso</h2>
                         {condominiosPendentes.length > 0 ? (
                             condominiosPendentes.map((usuario) => (
-                                <div key={usuario.id} className="card mb-3 shadow-sm" style={{backgroundColor: 'rgb(3 7 18)', color: '#fff', border: '2px solid #4fc1e9'}}>
+                                <div key={usuario.id} className="card mb-3 mt-4 shadow-sm rounded-4" style={{backgroundColor: 'rgb(3 7 18)', color: '#fff', border: '2px solid #4fc1e9'}}>
                                     <div className="card-body">
                                         <h5 className="card-title mb-4">{usuario.nome}</h5>
                                         <p className="card-text mb-1"><strong>Email:</strong> {usuario.email}</p>
@@ -224,14 +249,14 @@ export default function Condo() {
                                         <div className="d-flex justify-content-end">
                                             <button
                                                 type="button"
-                                                className="btn btn-success me-2"
+                                                className="btn btn-success me-2 rounded-pill"
                                                 onClick={() => alterarStatusVinculo(usuario.id, 1)}
                                             >
                                                 Aceitar
                                             </button>
                                             <button
                                                 type="button"
-                                                className="btn btn-danger"
+                                                className="btn btn-danger rounded-pill"
                                                 onClick={() => alterarStatusVinculo(usuario.id, 2)}
                                             >
                                                 Recusar
@@ -245,11 +270,6 @@ export default function Condo() {
                         )}
                     </div>
                 )}
-
-                {/* Botão de Logout */}
-                <div className="mt-4">
-                    <LogoutButton />
-                </div>
             </div>
         </>
     );

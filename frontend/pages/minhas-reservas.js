@@ -5,6 +5,7 @@ import Cookies from 'js-cookie';
 import { useRouter } from 'next/router';
 import LogoutButton from '../components/LogoutButton';
 import Head from 'next/head';
+import Image from 'next/image';
 
 export default function MinhasReservas() {
     const router = useRouter();
@@ -101,23 +102,42 @@ export default function MinhasReservas() {
                 <title>{condominioNome ? `${condominioNome} - Minhas Reservas` : 'Minhas Reservas - Condomínio'}</title>
             </Head>
 
+            <nav className="navbar navbar-expand-lg shadow-sm" style={{height:'10vh'}}> {/* Usando bg-light, ajuste para sua cor padrão */}
+                <div className="container-fluid">
+                    {/* Logo na Esquerda */}
+                    <a className="navbar-brand d-flex align-items-center" href="/home">
+                        <Image 
+                            src="/logos/horizontal-escuro-cheio.png" // Ajuste o src para o caminho real da sua logo
+                            alt="VOID Logo" 
+                            width={170} 
+                            height={170} 
+                            priority={true} 
+                            style={{marginLeft:'125px', objectFit: 'contain'}} // objectFit para ajustar imagem
+                        />
+                    </a>
+    
+                    {/* Botões alinhados à Direita */}
+                    <div className="d-flex align-items-center" style={{marginRight:'125px'}}>
+                        {/* Botão de Voltar para o Condomínio */}
+                        <button
+                            type="button"
+                            className="btn btn-secondary me-2 rounded-pill"
+                            onClick={() => router.push(`/condo?id=${condominioID}`)}
+                        >
+                            Voltar
+                        </button>
+
+                        <LogoutButton />
+                    </div>
+                </div>
+            </nav>
+
             <div className="container mt-5">
                 {/* Título principal da página com o nome do condomínio */}
                 <h1 className="mb-4">
                     Minhas Reservas {condominioNome ? `no Condomínio ${condominioNome}` : 'no Condomínio'}
                     {/* Removido ` (ID: ${condominioID})` */}
                 </h1>
-
-                {/* Botão de Voltar para o Condomínio */}
-                <button
-                    type="button"
-                    className="btn btn-secondary me-2"
-                    onClick={() => router.push(`/condo?id=${condominioID}`)}
-                >
-                    Voltar para o Condomínio
-                </button>
-
-                <LogoutButton />
 
                 {loading && <p className="text-info mt-4">Carregando suas reservas...</p>}
                 {error && <p className="text-danger mt-4">{error}</p>}
@@ -155,7 +175,7 @@ export default function MinhasReservas() {
 
                             return (
                                 <div key={reserva.id} className="col-12 col-md-6 col-lg-4 mb-4">
-                                    <div className="card h-100 shadow-sm" style={{backgroundColor: 'rgb(3 7 18)', color: '#fff', border: '2px solid #4fc1e9'}}>
+                                    <div className="card h-100 shadow-sm rounded-4" style={{backgroundColor: 'rgb(3 7 18)', color: '#fff', border: '2px solid #4fc1e9'}}>
                                         <div className="card-body">
                                             <h5 className="card-title mb-4">Reserva: {reserva.titulo || 'Sem Título'}</h5>
                                             <p className="card-text">

@@ -212,7 +212,7 @@ export default function Home() {
           <h2>Seus Condomínios</h2>
           {condominiosUsuario.map(condominio => (
             <a key={condominio.id} href={`condo?id=${condominio.id}`} className="text-decoration-none">
-              <div className="card mb-3" style={{backgroundColor: 'rgb(3 7 18)', color: '#fff', border: '2px solid #4fc1e9'}}>
+              <div className="card mb-3 rounded-4" style={{backgroundColor: 'rgb(3 7 18)', color: '#fff', border: '2px solid #4fc1e9'}}>
                 <div className="card-body">
                   <h5 className="card-title">{condominio.nome}</h5>
                   <p className="card-text"><strong>CNPJ:</strong> {condominio.cnpj}</p>
@@ -252,7 +252,7 @@ export default function Home() {
                       e.target.style.border = '2px solid #4fc1e9'
                     }}
                   />
-                  <button className="btn btn-info mt-4" onClick={handleSearchCondominio} style={{ color: '#fff', fontWeight: 'bold', color: 'rgb(3 7 18)'}}>Buscar</button>
+                  <button className="btn btn-info mt-4 rounded-pill" onClick={handleSearchCondominio} style={{ color: '#fff', fontWeight: 'bold', color: 'rgb(3 7 18)'}}>Buscar</button>
                 </div>
 
                 {condominioEncontrado && (
@@ -261,7 +261,7 @@ export default function Home() {
                     <p><strong>Nome:</strong> {condominioEncontrado.nome}</p>
                     <p><strong>CNPJ:</strong> {condominioEncontrado.cnpj}</p>
                     <p><strong>Endereço:</strong> {condominioEncontrado.endereco}</p>
-                    <button className="btn btn-info" onClick={handleIngressarCondominio} style={{fontWeight: 'bold'}}>Ingressar</button>
+                    <button className="btn btn-info rounded-pill" onClick={handleIngressarCondominio} style={{fontWeight: 'bold'}}>Ingressar</button>
                   </div>
                 )}
               </div>
@@ -324,7 +324,7 @@ export default function Home() {
                       </select>
                     </div>
                   ))}
-                  <button type="submit" className="btn btn-info mt-3 mb-3" style={{fontWeight: 'bold'}}>Criar Condomínio</button>
+                  <button type="submit" className="btn btn-info mt-3 mb-3 rounded-pill" style={{fontWeight: 'bold'}}>Criar Condomínio</button>
                 </form>
               </div>
             </div>

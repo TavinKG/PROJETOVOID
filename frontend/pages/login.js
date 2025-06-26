@@ -56,7 +56,7 @@ export default function Login() {
         <title>Login - PROJETO VOID</title>
       </Head>
       <div className="d-flex flex-column align-items-center justify-content-center min-vh-100">
-        <div className="card shadow p-4 w-100" style={{ maxWidth: '450px', backgroundColor: 'rgb(31 41 55)', color: '#fff'}}> {/* Levemente reduzido o maxWidth para um card de login mais focado */}
+        <div className="card shadow p-4 w-100 rounded-4" style={{ maxWidth: '450px', backgroundColor: 'rgb(31 41 55)', color: '#fff'}}> {/* Levemente reduzido o maxWidth para um card de login mais focado */}
           <div className="text-center mb-4">
             <img src="/logos/icone-escuro.png" alt="VOID Logo" className="mb-3" style={{ height: '100px' }} />
             <h2 className="mb-0">Login</h2>
@@ -68,7 +68,7 @@ export default function Login() {
                 type="email"
                 id="email"
                 name="email"
-                className="form-control"
+                className="form-control rounded-pill"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -80,7 +80,7 @@ export default function Login() {
                 type="password"
                 id="password"
                 name="password"
-                className="form-control"
+                className="form-control rounded-pill"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
@@ -88,7 +88,7 @@ export default function Login() {
             </div>
             <button
               type="submit"
-              className="btn btn-info w-100 py-2 mt-3"
+              className="btn btn-info w-100 py-2 mt-3 rounded-pill"
               disabled={loading}
               style={{color: 'rgb(31 41 55)', fontWeight: 'bold'}}
             >

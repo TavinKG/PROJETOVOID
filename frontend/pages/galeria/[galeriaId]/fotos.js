@@ -5,6 +5,7 @@ import Cookies from 'js-cookie';
 import { useRouter } from 'next/router';
 import LogoutButton from '../../../components/LogoutButton'; // Ajuste o caminho conforme a profundidade
 import Head from 'next/head';
+import Image from 'next/image';
 
 export default function FotosGaleria() {
     const router = useRouter();
@@ -223,30 +224,49 @@ export default function FotosGaleria() {
                 <title>{galeriaNome ? `${galeriaNome} - Fotos` : 'Fotos da Galeria'}</title>
             </Head>
 
+            <nav className="navbar navbar-expand-lg shadow-sm" style={{height:'10vh'}}> {/* Usando bg-light, ajuste para sua cor padrão */}
+                <div className="container-fluid">
+                    {/* Logo na Esquerda */}
+                    <a className="navbar-brand d-flex align-items-center" href="/home">
+                        <Image 
+                            src="/logos/horizontal-escuro-cheio.png" // Ajuste o src para o caminho real da sua logo
+                            alt="VOID Logo" 
+                            width={170} 
+                            height={170} 
+                            priority={true} 
+                            style={{marginLeft:'125px', objectFit: 'contain'}} // objectFit para ajustar imagem
+                        />
+                    </a>
+    
+                    {/* Botões alinhados à Direita */}
+                    <div className="d-flex align-items-center" style={{marginRight:'125px'}}>
+                        <button
+                            type="button"
+                            className="btn btn-secondary me-3 rounded-pill"
+                            onClick={() => router.push(`/galeria?id=${condominioId}`)} 
+                        >
+                            Voltar
+                        </button>
+                        <LogoutButton />
+                    </div>
+                </div>
+            </nav>
+
             <div className="container mt-5">
                 <h1 className="mb-4">
                     Fotos da Galeria: {galeriaNome} {condominioNome && `(${condominioNome})`}
                 </h1>
 
                 <div className="d-flex flex-wrap align-items-center mb-4">
-                    <button
-                        type="button"
-                        className="btn btn-secondary me-2"
-                        onClick={() => router.push(`/galeria?id=${condominioId}`)} 
-                    >
-                        Voltar para Galerias
-                    </button>
-
                     {(tipoUsuario === 'Administrador' || tipoUsuario === 'Morador') && ( 
                         <button
                             type="button"
-                            className="btn btn-info me-2"
+                            className="btn btn-info me-2 rounded-pill"
                             onClick={() => setShowUploadModal(true)}
                         >
                             Adicionar Foto
                         </button>
                     )}
-                    <LogoutButton />
                 </div>
 
                 {loading && <p className="text-info mt-4">Carregando fotos...</p>}
@@ -261,11 +281,11 @@ export default function FotosGaleria() {
                     <div className="row mt-4">
                         {fotos.map(foto => (
                             <div key={foto.id} className="col-12 col-sm-6 col-md-4 col-lg-3 mb-4">
-                                <div className="card h-100 shadow-sm">
+                                <div className="card h-100 shadow-sm rounded-4">
                                     {foto.url && (
                                         <img 
                                             src={foto.url} 
-                                            className="card-img-top" 
+                                            className="card-img-top rounded-4" 
                                             alt={foto.descricao || `Foto da galeria ${galeriaNome}`} 
                                             style={{ height: '200px', objectFit: 'cover', cursor: 'pointer' }} // Adicionado cursor: pointer
                                             onClick={() => openImageViewer(foto.url, foto.descricao)} // NOVO: Abre o visualizador ao clicar
@@ -284,13 +304,13 @@ export default function FotosGaleria() {
                                         {tipoUsuario === 'Administrador' && foto.status !== 'aprovada' && (
                                             <div className="mt-3">
                                                 <button 
-                                                    className="btn btn-success btn-sm me-2"
+                                                    className="btn btn-success btn-sm me-2 rounded-pill"
                                                     onClick={() => alterarStatusFoto(foto.id, 'aprovada')}
                                                 >
                                                     Aprovar
                                                 </button>
                                                 <button 
-                                                    className="btn btn-danger btn-sm"
+                                                    className="btn btn-danger btn-sm rounded-pill"
                                                     onClick={() => alterarStatusFoto(foto.id, 'rejeitada')}
                                                 >
                                                     Rejeitar
@@ -340,7 +360,7 @@ export default function FotosGaleria() {
                                     </div>
                                     {uploadError && <p className="text-danger mt-2">{uploadError}</p>}
                                     <div className="d-flex justify-content-end mt-4">
-                                        <button type="submit" className="btn btn-info" disabled={uploadLoading || !selectedFile}>
+                                        <button type="submit" className="btn btn-info rounded-pill" disabled={uploadLoading || !selectedFile}>
                                             <strong>
                                                 {uploadLoading ? 'Enviando...' : 'Fazer Upload'}
                                             </strong>

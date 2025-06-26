@@ -5,6 +5,7 @@ import Cookies from 'js-cookie';
 import { useRouter } from 'next/router';
 import LogoutButton from '../components/LogoutButton';
 import Head from 'next/head';
+import Image from 'next/image';
 
 export default function GerenciarReservas() {
     const router = useRouter();
@@ -159,6 +160,35 @@ export default function GerenciarReservas() {
                 <title>{condominioNome ? `${condominioNome} - Gerenciar Reservas` : 'Gerenciar Reservas - Condomínio'}</title>
             </Head>
 
+            <nav className="navbar navbar-expand-lg shadow-sm" style={{height:'10vh'}}> {/* Usando bg-light, ajuste para sua cor padrão */}
+                <div className="container-fluid">
+                    {/* Logo na Esquerda */}
+                    <a className="navbar-brand d-flex align-items-center" href="/home">
+                        <Image 
+                            src="/logos/horizontal-escuro-cheio.png" // Ajuste o src para o caminho real da sua logo
+                            alt="VOID Logo" 
+                            width={170} 
+                            height={170} 
+                            priority={true} 
+                            style={{marginLeft:'125px', objectFit: 'contain'}} // objectFit para ajustar imagem
+                        />
+                    </a>
+    
+                    {/* Botões alinhados à Direita */}
+                    <div className="d-flex align-items-center" style={{marginRight:'125px'}}>
+                        <button
+                            type="button"
+                            className="btn btn-secondary me-3 rounded-pill"
+                            onClick={() => router.push(`/condo?id=${condominioID}`)}
+                        >
+                            Voltar
+                        </button>
+
+                        <LogoutButton />
+                    </div>
+                </div>
+            </nav>
+
             <div className="container mt-5">
                 {/* NOVO: Título principal da página com o nome do condomínio */}
                 <h1 className="mb-4">
@@ -166,23 +196,13 @@ export default function GerenciarReservas() {
                     {/* REMOVIDO: {condominioID && !condominioNome && ` (ID: ${condominioID})`} */}
                 </h1>
 
-                <button
-                    type="button"
-                    className="btn btn-secondary me-2"
-                    onClick={() => router.push(`/condo?id=${condominioID}`)}
-                >
-                    Voltar para o Condomínio
-                </button>
-
-                <LogoutButton />
-
                 {/* Seção de Filtros */}
-                <div className="mt-4 mb-4 p-3 rounded" style={{border: '2px solid #4fc1e9'}}>
+                <div className="mt-4 mb-4 p-3 rounded-4" style={{border: '2px solid #4fc1e9'}}>
                     <h4>Filtros</h4>
                     <div className="row g-3">
                         <div className="col-md-4">
                             <label htmlFor="filterArea" className="form-label">Área</label>
-                            <select id="filterArea" className="form-select" value={filterAreaId} onChange={(e) => setFilterAreaId(e.target.value)} style={{backgroundColor: '#4fc1e9', border: 'none', fontWeight: 'bold'}}>
+                            <select id="filterArea" className="form-select rounded-pill" value={filterAreaId} onChange={(e) => setFilterAreaId(e.target.value)} style={{backgroundColor: '#4fc1e9', border: 'none', fontWeight: 'bold'}}>
                                 <option value="" style={{fontWeight:'bold'}}>Todas as Áreas</option>
                                 {areasComunsCondominio.map(area => (
                                     <option key={area.id} value={area.id} style={{fontWeight:'bold'}}>{area.nome}</option>
@@ -191,7 +211,7 @@ export default function GerenciarReservas() {
                         </div>
                         <div className="col-md-4">
                             <label htmlFor="filterStatus" className="form-label">Status</label>
-                            <select id="filterStatus" className="form-select" value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)} style={{backgroundColor: '#4fc1e9', border: 'none', fontWeight:'bold'}}>
+                            <select id="filterStatus" className="form-select rounded-pill" value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)} style={{backgroundColor: '#4fc1e9', border: 'none', fontWeight:'bold'}}>
                                 <option value="" style={{fontWeight:'bold'}}>Todos os Status</option>
                                 <option value="0" style={{fontWeight:'bold'}}>Pendente</option>
                                 <option value="1" style={{fontWeight:'bold'}}>Aprovada</option>
@@ -201,7 +221,7 @@ export default function GerenciarReservas() {
                         </div>
                         <div className="col-md-4">
                             <label htmlFor="filterDate" className="form-label">Data</label>
-                            <input type="date" id="filterDate" className="form-control" value={filterDate} onChange={(e) => setFilterDate(e.target.value)} style={{backgroundColor: '#4fc1e9', border: 'none', fontWeight:'bold'}}/>
+                            <input type="date" id="filterDate" className="form-control rounded-pill" value={filterDate} onChange={(e) => setFilterDate(e.target.value)} style={{backgroundColor: '#4fc1e9', border: 'none', fontWeight:'bold'}}/>
                         </div>
                     </div>
                 </div>
@@ -219,7 +239,7 @@ export default function GerenciarReservas() {
                     <div className="row mt-4">
                         {reservas.map(reserva => (
                             <div key={reserva.id} className="col-12 col-md-6 col-lg-4 mb-4">
-                                <div className="card h-100 shadow-sm" style={{backgroundColor: 'rgb(3 7 18)', border:'2px solid #4fc1e9', color:'#fff'}}>
+                                <div className="card h-100 shadow-sm rounded-4" style={{backgroundColor: 'rgb(3 7 18)', border:'2px solid #4fc1e9', color:'#fff'}}>
                                     <div className="card-body">
                                         <h5 className="card-title">Reserva: {reserva.titulo || 'Sem Título'}</h5>
                                         <p className="card-text">
@@ -248,13 +268,13 @@ export default function GerenciarReservas() {
                                             {reserva.status === '0' && (
                                                 <>
                                                     <button 
-                                                        className="btn btn-success btn-sm"
+                                                        className="btn btn-success btn-sm rounded-pill"
                                                         onClick={() => alterarStatusReserva(reserva.id, '1')}
                                                     >
                                                         Aprovar
                                                     </button>
                                                     <button 
-                                                        className="btn btn-danger btn-sm"
+                                                        className="btn btn-danger btn-sm rounded-pill"
                                                         onClick={() => alterarStatusReserva(reserva.id, '2')}
                                                     >
                                                         Recusar
@@ -263,7 +283,7 @@ export default function GerenciarReservas() {
                                             )}
                                             {reserva.status !== '5' && (
                                                 <button 
-                                                    className="btn btn-warning btn-sm text-dark"
+                                                    className="btn btn-warning btn-sm text-dark rounded-pill"
                                                     onClick={() => alterarStatusReserva(reserva.id, '5')}
                                                 >
                                                     Cancelar

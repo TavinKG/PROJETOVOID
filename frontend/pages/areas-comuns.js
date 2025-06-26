@@ -5,6 +5,7 @@ import Cookies from 'js-cookie';
 import { useRouter } from 'next/router';
 import LogoutButton from '../components/LogoutButton';
 import Head from 'next/head';
+import Image from 'next/image';
 
 import Calendar from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
@@ -280,21 +281,40 @@ export default function AreasComuns() {
                 <title>{condominioNome ? `${condominioNome} - Áreas Comuns` : 'Áreas Comuns - Condomínio'}</title>
             </Head>
 
+            <nav className="navbar navbar-expand-lg shadow-sm" style={{height:'10vh'}}> {/* Usando bg-light, ajuste para sua cor padrão */}
+                <div className="container-fluid">
+                    {/* Logo na Esquerda */}
+                    <a className="navbar-brand d-flex align-items-center" href="/home">
+                        <Image 
+                            src="/logos/horizontal-escuro-cheio.png" // Ajuste o src para o caminho real da sua logo
+                            alt="VOID Logo" 
+                            width={170} 
+                            height={170} 
+                            priority={true} 
+                            style={{marginLeft:'125px', objectFit: 'contain'}} // objectFit para ajustar imagem
+                        />
+                    </a>
+    
+                    {/* Botões alinhados à Direita */}
+                    <div className="d-flex align-items-center" style={{marginRight:'125px'}}>
+                        <button
+                        type="button"
+                        className="btn btn-secondary me-3 rounded-pill"
+                        onClick={() => router.push(`/condo?id=${condominioID}`)}
+                    >
+                        Voltar
+                    </button>
+                    <LogoutButton />
+                    </div>
+                </div>
+            </nav>
+
             <div className="container mt-5">
                 {/* Título principal da página com o nome do condomínio */}
                 <h1 className="mb-4">
                     {condominioNome ? `Áreas Comuns do Condomínio ${condominioNome}` : 'Áreas Comuns do Condomínio'}
                     {/* Removido ` (ID: ${condominioID})` */}
                 </h1>
-
-                <button
-                    type="button"
-                    className="btn btn-secondary me-2"
-                    onClick={() => router.push(`/condo?id=${condominioID}`)}
-                >
-                    Voltar para o Condomínio
-                </button>
-                <LogoutButton />
 
                 {loading && <p className="text-info mt-4">Carregando áreas comuns...</p>}
                 {error && <p className="text-danger mt-4">{error}</p>}
@@ -306,7 +326,7 @@ export default function AreasComuns() {
                     <div className="row mt-4">
                         {areasComuns.map(area => (
                             <div key={area.id} className="col-md-6 col-lg-4 mb-4">
-                                <div className="card h-100 shadow-sm" style={{backgroundColor: 'rgb(3 7 18)', color: '#fff', border: '2px solid #4fc1e9'}}>
+                                <div className="card h-100 shadow-sm rounded-4" style={{backgroundColor: 'rgb(3 7 18)', color: '#fff', border: '2px solid #4fc1e9'}}>
                                     <div className="card-body">
                                         <h5 className="card-title">{area.nome}</h5>
                                         <p className="card-text">
@@ -317,7 +337,7 @@ export default function AreasComuns() {
                                             }
                                         </p>
                                         <button 
-                                            className="btn btn-info btn-sm mt-2" 
+                                            className="btn btn-info btn-sm mt-2 rounded-pill" 
                                             disabled={!area.disponibilidade}
                                             onClick={() => handleReservarClick(area)}
                                             style={{fontWeight: 'bold'}}
@@ -387,7 +407,7 @@ export default function AreasComuns() {
                                         availableSlots.map((slot, index) => (
                                             <button
                                                 key={index}
-                                                className={`btn ${selectedSlot && selectedSlot.time === slot.time ? 'btn-info' : (slot.isAvailable ? 'btn-outline-info' : 'btn-secondary')}`}
+                                                className={`btn ${selectedSlot && selectedSlot.time === slot.time ? 'btn-info' : (slot.isAvailable ? 'btn-outline-info' : 'btn-secondary')} rounded-pill`}
                                                 disabled={!slot.isAvailable}
                                                 onClick={() => setSelectedSlot(slot)}
                                                 style={{color: 'rgb(3 7 18)'}}
@@ -403,7 +423,7 @@ export default function AreasComuns() {
                             <div className="modal-footer">
                                 <button 
                                     type="button" 
-                                    className="btn btn-info" 
+                                    className="btn btn-info rounded-pill" 
                                     disabled={!selectedSlot || !selectedSlot.isAvailable}
                                     onClick={handleConfirmarReservaClick}
                                     style={{fontWeight: 'bold'}}
@@ -459,10 +479,7 @@ export default function AreasComuns() {
                                         ></textarea>
                                     </div>
                                     <div className="d-flex justify-content-end mt-4">
-                                        <button type="button" className="btn btn-secondary me-2" onClick={closeConfirmacaoModal}>
-                                            Cancelar
-                                        </button>
-                                        <button type="submit" className="btn btn-info">
+                                        <button type="submit" className="btn btn-info rounded-pill">
                                             Finalizar Reserva
                                         </button>
                                     </div>

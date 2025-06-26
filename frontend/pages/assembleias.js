@@ -5,6 +5,7 @@ import Cookies from 'js-cookie';
 import { useRouter } from 'next/router';
 import LogoutButton from '../components/LogoutButton';
 import Head from 'next/head';
+import Image from 'next/image';
 
 export default function Assembleias() {
     const router = useRouter();
@@ -235,6 +236,34 @@ export default function Assembleias() {
                 <title>{condominioNome ? `${condominioNome} - Assembleias` : 'Assembleias - Condomínio'}</title>
             </Head>
 
+            <nav className="navbar navbar-expand-lg shadow-sm" style={{height:'10vh'}}> {/* Usando bg-light, ajuste para sua cor padrão */}
+                <div className="container-fluid">
+                    {/* Logo na Esquerda */}
+                    <a className="navbar-brand d-flex align-items-center" href="/home">
+                        <Image 
+                            src="/logos/horizontal-escuro-cheio.png" // Ajuste o src para o caminho real da sua logo
+                            alt="VOID Logo" 
+                            width={170} 
+                            height={170} 
+                            priority={true} 
+                            style={{marginLeft:'125px', objectFit: 'contain'}} // objectFit para ajustar imagem
+                        />
+                    </a>
+    
+                    {/* Botões alinhados à Direita */}
+                    <div className="d-flex align-items-center" style={{marginRight:'125px'}}>
+                        <button
+                            type="button"
+                            className="btn btn-secondary me-3 rounded-pill"
+                            onClick={() => router.push(`/condo?id=${condominioID}`)}
+                        >
+                            Voltar
+                        </button>
+                        <LogoutButton />
+                    </div>
+                </div>
+            </nav>
+
             <div className="container mt-5">
                 {/* Título principal da página com o nome do condomínio */}
                 <h1 className="mb-4">
@@ -244,24 +273,15 @@ export default function Assembleias() {
 
                 {/* Botões de Ação */}
                 <div className="d-flex flex-wrap align-items-center mb-4">
-                    <button
-                        type="button"
-                        className="btn btn-secondary me-2"
-                        onClick={() => router.push(`/condo?id=${condominioID}`)}
-                    >
-                        Voltar para o Condomínio
-                    </button>
-
                     {tipoUsuario === 'Administrador' && (
                         <button
                             type="button"
-                            className="btn btn-info me-2"
+                            className="btn btn-info me-2 rounded-pill"
                             onClick={() => setShowAgendarModal(true)}
                         >
                             Agendar Nova Assembleia
                         </button>
                     )}
-                    <LogoutButton />
                 </div>
 
                 {/* Mensagens de Carregamento/Erro/Vazio */}
@@ -277,7 +297,7 @@ export default function Assembleias() {
                     <div className="row mt-4">
                         {assembleias.map(assembleia => (
                             <div key={assembleia.id} className="col-12 col-md-6 col-lg-4 mb-4">
-                                <div className="card h-100 shadow-sm" style={{backgroundColor: 'rgb(3 7 18)', color: '#fff', border: '2px solid #4fc1e9'}}>
+                                <div className="card h-100 shadow-sm rounded-4" style={{backgroundColor: 'rgb(3 7 18)', color: '#fff', border: '2px solid #4fc1e9'}}>
                                     <div className="card-body">
                                         <h5 className="card-title mb-4">{assembleia.titulo}</h5>
                                         <p className="card-text">
@@ -297,7 +317,7 @@ export default function Assembleias() {
                                                     <span className="badge bg-success">Presença Confirmada!</span>
                                                 ) : (
                                                     <button
-                                                        className="btn btn-success btn-sm"
+                                                        className="btn btn-success btn-sm rounded-pill"
                                                         onClick={() => handleConfirmarPresenca(assembleia.id)}
                                                     >
                                                         Confirmar Presença
@@ -310,7 +330,7 @@ export default function Assembleias() {
                                         {tipoUsuario === 'Administrador' && (
                                             <div className="mt-3">
                                                 <button 
-                                                    className="btn btn-info btn-sm me-2"
+                                                    className="btn btn-info btn-sm me-2 rounded-pill"
                                                     onClick={() => handleVerParticipantesClick(assembleia.id)}
                                                     style={{fontWeight:'bold'}}
                                                 >
@@ -392,10 +412,7 @@ export default function Assembleias() {
                                         ></textarea>
                                     </div>
                                     <div className="d-flex justify-content-end mt-4">
-                                        <button type="button" className="btn btn-secondary me-2" onClick={() => setShowAgendarModal(false)}>
-                                            Cancelar
-                                        </button>
-                                        <button type="submit" className="btn btn-info" style={{fontWeight:'bold'}}>
+                                        <button type="submit" className="btn btn-info rounded-pill" style={{fontWeight:'bold'}}>
                                             Agendar Assembleia
                                         </button>
                                     </div>

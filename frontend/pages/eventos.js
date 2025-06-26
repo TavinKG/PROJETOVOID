@@ -5,6 +5,7 @@ import Cookies from 'js-cookie';
 import { useRouter } from 'next/router';
 import LogoutButton from '../components/LogoutButton';
 import Head from 'next/head';
+import Image from 'next/image';
 
 export default function Eventos() {
     const router = useRouter();
@@ -171,6 +172,34 @@ export default function Eventos() {
                 <title>{condominioNome ? `${condominioNome} - Eventos` : 'Eventos - Condomínio'}</title>
             </Head>
 
+            <nav className="navbar navbar-expand-lg shadow-sm" style={{height:'10vh'}}> {/* Usando bg-light, ajuste para sua cor padrão */}
+                <div className="container-fluid">
+                    {/* Logo na Esquerda */}
+                    <a className="navbar-brand d-flex align-items-center" href="/home">
+                        <Image 
+                            src="/logos/horizontal-escuro-cheio.png" // Ajuste o src para o caminho real da sua logo
+                            alt="VOID Logo" 
+                            width={170} 
+                            height={170} 
+                            priority={true} 
+                            style={{marginLeft:'125px', objectFit: 'contain'}} // objectFit para ajustar imagem
+                        />
+                    </a>
+    
+                    {/* Botões alinhados à Direita */}
+                    <div className="d-flex align-items-center" style={{marginRight:'125px'}}>
+                        <button
+                            type="button"
+                            className="btn btn-secondary me-3 rounded-pill"
+                            onClick={() => router.push(`/condo?id=${condominioID}`)}
+                        >
+                            Voltar
+                        </button>
+                        <LogoutButton />
+                    </div>
+                </div>
+            </nav>
+
             <div className="container mt-5">
                 <h1 className="mb-4">
                     Eventos {condominioNome ? `do Condomínio ${condominioNome}` : 'no Condomínio'}
@@ -178,24 +207,15 @@ export default function Eventos() {
 
                 {/* Botões de Ação */}
                 <div className="d-flex flex-wrap align-items-center mb-4">
-                    <button
-                        type="button"
-                        className="btn btn-secondary me-2"
-                        onClick={() => router.push(`/condo?id=${condominioID}`)}
-                    >
-                        Voltar para o Condomínio
-                    </button>
-
                     {tipoUsuario === 'Administrador' && (
                         <button
                             type="button"
-                            className="btn btn-info me-2"
+                            className="btn btn-info me-2 rounded-pill"
                             onClick={() => setShowAgendarModal(true)} // Abre modal de agendamento
                         >
                             Agendar Novo Evento
                         </button>
                     )}
-                    <LogoutButton />
                 </div>
 
                 {/* Mensagens de Carregamento/Erro/Vazio */}
@@ -211,7 +231,7 @@ export default function Eventos() {
                     <div className="row mt-4">
                         {eventos.map(evento => (
                             <div key={evento.id} className="col-12 col-md-6 col-lg-4 mb-4">
-                                <div className="card h-100 shadow-sm" style={{backgroundColor: 'rgb(3 7 18)', color: '#fff', border: '2px solid #4fc1e9'}}>
+                                <div className="card h-100 shadow-sm rounded-4" style={{backgroundColor: 'rgb(3 7 18)', color: '#fff', border: '2px solid #4fc1e9'}}>
                                     <div className="card-body">
                                         <h5 className="card-title mb-4">{evento.nome}</h5>
                                         <p className="card-text">
@@ -226,21 +246,6 @@ export default function Eventos() {
                                         <p className="card-text">
                                             <strong>Criado por:</strong> {evento.criador ? evento.criador.nome : 'N/A'}
                                         </p>
-
-                                        {/* Ações para Morador (Confirmar Presença - Opcional) */}
-                                        {/* {tipoUsuario === 'Morador' && (
-                                            <div className="mt-3">
-                                                <button className="btn btn-success btn-sm" disabled>Confirmar Presença (Futuro)</button>
-                                            </div>
-                                        )} */}
-
-                                        {/* Ações para Administrador (Editar/Excluir - Opcional) */}
-                                        {tipoUsuario === 'Administrador' && (
-                                            <div className="mt-3">
-                                                <button className="btn btn-sm btn-outline-info me-2" disabled>Editar</button>
-                                                <button className="btn btn-sm btn-outline-danger" disabled>Excluir</button>
-                                            </div>
-                                        )}
                                     </div>
                                 </div>
                             </div>
@@ -326,7 +331,7 @@ export default function Eventos() {
                                         ></textarea>
                                     </div>
                                     <div className="d-flex justify-content-end mt-4">
-                                        <button type="submit" className="btn btn-info" style={{color:'rgb(3 7 18)'}}>
+                                        <button type="submit" className="btn btn-info rounded-pill" style={{color:'rgb(3 7 18)'}}>
                                             <strong>
                                                 Agendar Evento
                                             </strong>

@@ -102,7 +102,7 @@ export default function Signup() {
         <title>Cadastro - PROJETO VOID</title>
       </Head>
       <div className="d-flex flex-column align-items-center justify-content-center min-vh-100">
-        <div className="card shadow p-4 w-100" style={{ maxWidth: '600px', backgroundColor: 'rgb(31 41 55)', color: '#fff', fontWeight: 'bold' }}>
+        <div className="card shadow p-4 w-100 rounded-4" style={{ maxWidth: '600px', backgroundColor: 'rgb(31 41 55)', color: '#fff', fontWeight: 'bold' }}>
           <div className="text-center mb-4">
             <img src="/logos/icone-escuro.png" alt="VOID Logo" className="mb-2" style={{ height: '100px' }} />
             <h2 className="mb-0">Cadastro</h2>
@@ -145,7 +145,7 @@ export default function Signup() {
                 type="text"
                 id="nome"
                 name="nome"
-                className="form-control"
+                className="form-control rounded-pill"
                 value={formData.nome}
                 onChange={handleInputChange}
                 required
@@ -157,7 +157,7 @@ export default function Signup() {
                 type="email"
                 id="email"
                 name="email"
-                className="form-control"
+                className="form-control rounded-pill"
                 value={formData.email}
                 onChange={handleInputChange}
                 required
@@ -173,7 +173,7 @@ export default function Signup() {
                   }}
                   id="telefone"
                   name="telefone"
-                  className="form-control"
+                  className="form-control rounded-pill"
                   value={formData.telefone} 
                   onAccept={(value, mask) => {
                     setFormData(prevData => ({ ...prevData, telefone: mask.unmaskedValue }));
@@ -191,7 +191,7 @@ export default function Signup() {
                   }}
                   id="cpf"
                   name="cpf"
-                  className="form-control"
+                  className="form-control rounded-pill"
                   value={formData.cpf} 
                   onAccept={(value, mask) => {
                     setFormData(prevData => ({ ...prevData, cpf: mask.unmaskedValue }));
@@ -208,7 +208,7 @@ export default function Signup() {
                   type="date"
                   id="dataNascimento"
                   name="dataNascimento"
-                  className="form-control"
+                  className="form-control rounded-pill"
                   value={formData.dataNascimento}
                   onChange={handleInputChange}
                   required
@@ -220,7 +220,7 @@ export default function Signup() {
                   type="password"
                   id="senha"
                   name="senha"
-                  className="form-control"
+                  className="form-control rounded-pill"
                   value={formData.senha}
                   onChange={handleInputChange}
                   required
@@ -229,7 +229,7 @@ export default function Signup() {
             </div>
             <button
               type="submit"
-              className="btn btn-info w-100 py-2 mt-3"
+              className="btn btn-info w-100 py-2 mt-3 rounded-pill"
               disabled={loading}
               style={{fontWeight: 'bold'}}
             >

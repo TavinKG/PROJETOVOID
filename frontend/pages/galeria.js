@@ -5,6 +5,7 @@ import Cookies from 'js-cookie';
 import { useRouter } from 'next/router';
 import LogoutButton from '../components/LogoutButton';
 import Head from 'next/head';
+import Image from 'next/image';
 import Link from 'next/link'; // Para links para as fotos da galeria
 
 export default function Galeria() {
@@ -130,6 +131,34 @@ export default function Galeria() {
                 <title>{condominioNome ? `${condominioNome} - Galeria de Fotos` : 'Galeria de Fotos - Condomínio'}</title>
             </Head>
 
+            <nav className="navbar navbar-expand-lg shadow-sm" style={{height:'10vh'}}> {/* Usando bg-light, ajuste para sua cor padrão */}
+                <div className="container-fluid">
+                    {/* Logo na Esquerda */}
+                    <a className="navbar-brand d-flex align-items-center" href="/home">
+                        <Image 
+                            src="/logos/horizontal-escuro-cheio.png" // Ajuste o src para o caminho real da sua logo
+                            alt="VOID Logo" 
+                            width={170} 
+                            height={170} 
+                            priority={true} 
+                            style={{marginLeft:'125px', objectFit: 'contain'}} // objectFit para ajustar imagem
+                        />
+                    </a>
+    
+                    {/* Botões alinhados à Direita */}
+                    <div className="d-flex align-items-center" style={{marginRight:'125px'}}>
+                        <button
+                            type="button"
+                            className="btn btn-secondary me-3 rounded-pill"
+                            onClick={() => router.push(`/condo?id=${condominioID}`)}
+                        >
+                            Voltar
+                        </button>
+                        <LogoutButton />
+                    </div>
+                </div>
+            </nav>
+
             <div className="container mt-5">
                 <h1 className="mb-4">
                     Galeria de Fotos {condominioNome ? `do Condomínio ${condominioNome}` : 'no Condomínio'}
@@ -137,24 +166,15 @@ export default function Galeria() {
 
                 {/* Botões de Ação */}
                 <div className="d-flex flex-wrap align-items-center mb-4">
-                    <button
-                        type="button"
-                        className="btn btn-secondary me-2"
-                        onClick={() => router.push(`/condo?id=${condominioID}`)}
-                    >
-                        Voltar para o Condomínio
-                    </button>
-
                     {tipoUsuario === 'Administrador' && (
                         <button
                             type="button"
-                            className="btn btn-info me-2"
+                            className="btn btn-info me-2 rounded-pill"
                             onClick={() => setShowCriarGaleriaModal(true)} // Abre modal de criação
                         >
                             Criar Nova Galeria
                         </button>
                     )}
-                    <LogoutButton />
                 </div>
 
                 {/* Mensagens de Carregamento/Erro/Vazio */}
@@ -171,11 +191,11 @@ export default function Galeria() {
                         {galerias.map(galeria => (
                             <div key={galeria.id} className="col-12 col-md-6 col-lg-4 mb-4">
                                 <Link href={`/galeria/${galeria.id}/fotos?condominioId=${condominioID}`} className="text-decoration-none text-dark">
-                                    <div className="card h-100 shadow-sm" >
+                                    <div className="card h-100 shadow-sm rounded-4" >
                                         {galeria.foto_capa_url && (
                                             <img 
                                                 src={galeria.foto_capa_url} 
-                                                className="card-img-top" 
+                                                className="card-img-top rounded-4" 
                                                 alt={`Capa da galeria ${galeria.nome}`} 
                                                 style={{ height: '200px', objectFit: 'cover' }}
                                             />
@@ -219,7 +239,7 @@ export default function Galeria() {
                                         />
                                     </div>
                                     <div className="d-flex justify-content-end mt-4">
-                                        <button type="submit" className="btn btn-info">
+                                        <button type="submit" className="btn btn-info rounded-pill">
                                             <strong>
                                                 Criar Galeria
                                             </strong>

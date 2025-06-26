@@ -5,6 +5,7 @@ import Cookies from 'js-cookie';
 import { useRouter } from 'next/router';
 import LogoutButton from '../components/LogoutButton';
 import Head from 'next/head';
+import Image from 'next/image';
 
 export default function Avisos() {
     const router = useRouter();
@@ -113,6 +114,35 @@ export default function Avisos() {
                 <title>{condominioNome ? `${condominioNome} - Avisos` : 'Avisos - Condomínio'}</title>
             </Head>
 
+            <nav className="navbar navbar-expand-lg shadow-sm" style={{height:'10vh'}}> {/* Usando bg-light, ajuste para sua cor padrão */}
+                <div className="container-fluid">
+                    {/* Logo na Esquerda */}
+                    <a className="navbar-brand d-flex align-items-center" href="/home">
+                        <Image 
+                            src="/logos/horizontal-escuro-cheio.png" // Ajuste o src para o caminho real da sua logo
+                            alt="VOID Logo" 
+                            width={170} 
+                            height={170} 
+                            priority={true} 
+                            style={{marginLeft:'125px', objectFit: 'contain'}} // objectFit para ajustar imagem
+                        />
+                    </a>
+    
+                    {/* Botões alinhados à Direita */}
+                    <div className="d-flex align-items-center" style={{marginRight:'125px'}}>
+                        {/* Botão de Voltar */}
+                        <button
+                            type="button"
+                            className="btn btn-secondary me-3 rounded-pill"
+                            onClick={() => router.back()}
+                        >
+                            Voltar
+                        </button>
+                        <LogoutButton />
+                    </div>
+                </div>
+            </nav>
+
             <div className="container mt-5">
                 {/* Título principal da página com o nome do condomínio */}
                 <h1 className="mb-4">
@@ -120,19 +150,10 @@ export default function Avisos() {
                     {/* Removido ` (ID: ${condominioID})` */}
                 </h1>
 
-                {/* Botão de Voltar */}
-                <button
-                    type="button"
-                    className="btn btn-secondary mb-3 me-2"
-                    onClick={() => router.back()}
-                >
-                    Voltar
-                </button>
-
                 {tipoUsuario === 'Administrador' && (
                     <button
                         type="button"
-                        className="btn btn-info mb-3"
+                        className="btn btn-info mb-3 rounded-pill"
                         onClick={() => setModalOpen(true)}
                     >
                         Criar Aviso
@@ -185,7 +206,7 @@ export default function Avisos() {
                                 <div className="modal-footer">
                                     <button
                                         type="button"
-                                        className="btn btn-info"
+                                        className="btn btn-info rounded-pill"
                                         onClick={criarAviso}
                                     ><strong>
                                         Salvar Aviso
@@ -207,7 +228,7 @@ export default function Avisos() {
                             });
 
                             return (
-                                <div key={aviso.id} className="card mb-3 shadow-sm" style={{backgroundColor: 'rgb(3 7 18)', color: '#fff', border: '2px solid #4fc1e9'}}>
+                                <div key={aviso.id} className="card mb-3 shadow-sm rounded-4" style={{backgroundColor: 'rgb(3 7 18)', color: '#fff', border: '2px solid #4fc1e9'}}>
                                     <div className="card-body">
                                         <h5 className="card-title mb-4">{aviso.titulo}</h5>
                                         <p className="card-text mb-1">
@@ -227,11 +248,6 @@ export default function Avisos() {
                 ) : (
                     <p className="text-info">Não foram encontrados avisos para este condomínio.</p>
                 )}
-
-                {/* Botão de Logout */}
-                <div className="mt-4">
-                    <LogoutButton />
-                </div>
             </div>
         </>
     );
