@@ -11,6 +11,7 @@ export default function Condo() {
     const userId = Cookies.get('userId');
     const [condominioID, setCondominioId] = useState(null);
     const [condominioNome, setCondominioNome] = useState('');
+    const [condominioDetalhes, setCondominioDetalhes] = useState(null);
     const [condominiosPendentes, setCondominiosPendentes] = useState([]);
     const [tipoUsuario, setTipoUsuario] = useState(null);
     const [showNotificacoesModal, setNotificacoesModal] = useState(false);
@@ -34,19 +35,22 @@ export default function Condo() {
         }
     }, [condominioID]);
 
-    const fetchCondominioNome = useCallback(async () => {
+    const fetchCondominioDetalhes = useCallback(async () => {
         if (!condominioID) return;
         try {
             const response = await fetch(`http://localhost:5000/api/condominios/${condominioID}`);
             if (response.ok) {
                 const data = await response.json();
-                setCondominioNome(data.nome);
+                setCondominioDetalhes(data); // Armazena o objeto completo
+                setCondominioNome(data.nome); // Define o nome para o título
             } else {
-                console.error('Erro ao buscar nome do condomínio:', response.statusText);
+                console.error('Erro ao buscar detalhes do condomínio:', response.statusText);
+                setCondominioDetalhes(null);
                 setCondominioNome('Condomínio Não Encontrado');
             }
         } catch (error) {
-            console.error('Erro de rede ao buscar nome do condomínio:', error);
+            console.error('Erro de rede ao buscar detalhes do condomínio:', error);
+            setCondominioDetalhes(null);
             setCondominioNome('Erro ao Carregar Nome');
         }
     }, [condominioID]);
@@ -64,9 +68,9 @@ export default function Condo() {
     useEffect(() => {
         if (condominioID) {
             fetchCondominiosPendentes();
-            fetchCondominioNome();
+            fetchCondominioDetalhes();
         }
-    }, [condominioID, fetchCondominiosPendentes, fetchCondominioNome]);
+    }, [condominioID, fetchCondominiosPendentes, fetchCondominioDetalhes]);
 
     const alterarStatusVinculo = async (usuarioId, status) => {
         if (!confirm(`Tem certeza que deseja alterar o status do vínculo para ${status}?`)) {
@@ -97,6 +101,16 @@ export default function Condo() {
             alert('Erro ao processar a solicitação.');
         }
     };
+
+    const formatCnpj = (cnpj) => {
+        if (!cnpj) return 'N/A';
+        const rawCnpj = String(cnpj).replace(/\D/g, '');
+        if (rawCnpj.length <= 2) return rawCnpj;
+        if (rawCnpj.length <= 5) return `${rawCnpj.slice(0, 2)}.${rawCnpj.slice(2)}`;
+        if (rawCnpj.length <= 8) return `${rawCnpj.slice(0, 2)}.${rawCnpj.slice(2, 5)}.${rawCnpj.slice(5)}`;
+        if (rawCnpj.length <= 12) return `${rawCnpj.slice(0, 2)}.${rawCnpj.slice(2, 5)}.${rawCnpj.slice(5, 8)}/${rawCnpj.slice(8)}`;
+        return `${rawCnpj.slice(0, 2)}.${rawCnpj.slice(2, 5)}.${rawCnpj.slice(5, 8)}/${rawCnpj.slice(8, 12)}-${rawCnpj.slice(12, 14)}`;
+    };  
 
     return (
         <>
@@ -129,7 +143,7 @@ export default function Condo() {
                                 onClick={() => setNotificacoesModal(true)}
                                 style={{color:'#fff', background:'none', border:'none'}}
                             >
-                                Gerenciar Ingressos ({condominiosPendentes.length})
+                                Pedidos ({condominiosPendentes.length})
                             </button>
                         )}
 
@@ -163,7 +177,7 @@ export default function Condo() {
                                 onClick={() => router.push(`/gerenciar-reservas?id=${condominioID}`)}
                                 style={{color:'#fff', background:'none', border:'none'}}
                             >
-                                Gerenciar Reservas
+                                Reservas
                             </button>
                         )}
 
@@ -184,7 +198,7 @@ export default function Condo() {
                             onClick={() => router.push(`/galeria?id=${condominioID}`)}
                             style={{color:'#fff', background:'none', border:'none'}}
                         >
-                            Galeria de Fotos
+                            Galeria
                         </button>
 
                         {}
@@ -224,6 +238,20 @@ export default function Condo() {
                 <h1 className="mb-4 text-center">
                     {condominioNome ? `Condomínio ${condominioNome}` : 'Condomínio'}
                 </h1>
+
+                {condominioDetalhes ? (
+                    <div className="card mb-4 shadow-sm rounded-4" style={{backgroundColor: 'rgb(3 7 18)', color: '#fff', border: '2px solid #4fc1e9'}}>
+                        <div className="card-body">
+                            <h5 className="card-title text-center mb-3">Informações Gerais</h5>
+                            <p className="card-text"><strong>Nome:</strong> {condominioDetalhes.nome}</p>
+                            <p className="card-text"><strong>CNPJ:</strong> {formatCnpj(condominioDetalhes.cnpj)}</p>
+                            <p className="card-text"><strong>Endereço:</strong> {condominioDetalhes.endereco}</p>
+                            {/* Adicione outras informações aqui se existirem no objeto condominioDetalhes */}
+                        </div>
+                    </div>
+                ) : (
+                    <p className="text-info text-center">Carregando informações do condomínio...</p>
+                )}
 
                 {showNotificacoesModal && (tipoUsuario === 'Administrador') && (
                     <div className="modal fade show d-block" tabIndex="-1" role="dialog" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
