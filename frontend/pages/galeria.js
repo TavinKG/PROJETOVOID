@@ -1,4 +1,3 @@
-// pages/galeria.js
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { useEffect, useState, useCallback } from 'react';
 import Cookies from 'js-cookie';
@@ -6,19 +5,18 @@ import { useRouter } from 'next/router';
 import LogoutButton from '../components/LogoutButton';
 import Head from 'next/head';
 import Image from 'next/image';
-import Link from 'next/link'; // Para links para as fotos da galeria
+import Link from 'next/link';
 
 export default function Galeria() {
     const router = useRouter();
     const userId = Cookies.get('userId');
     const tipoUsuario = Cookies.get('tipoUsuario');
     const [condominioID, setCondominioId] = useState(null);
-    const [condominioNome, setCondominioNome] = useState(''); // Estado para o nome do condomínio
+    const [condominioNome, setCondominioNome] = useState('');
     const [galerias, setGalerias] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
-    // ESTADOS PARA O MODAL DE CRIAÇÃO DE GALERIA (APENAS ADMIN)
     const [showCriarGaleriaModal, setShowCriarGaleriaModal] = useState(false);
     const [novaGaleriaNome, setNovaGaleriaNome] = useState('');
 
@@ -37,7 +35,6 @@ export default function Galeria() {
         }
     }, [userId, router]);
 
-    // Função para buscar o nome do condomínio (reutilizada de outras páginas)
     const fetchCondominioNome = useCallback(async () => {
         if (!condominioID) return;
         try {
@@ -55,14 +52,13 @@ export default function Galeria() {
         }
     }, [condominioID]);
 
-    // Função para buscar as galerias
     const fetchGalerias = useCallback(async () => {
         if (!condominioID) return;
 
         setLoading(true);
         setError(null);
         try {
-            const response = await fetch(`http://localhost:5000/api/galerias/condominio/${condominioID}`); // API a ser criada no backend
+            const response = await fetch(`http://localhost:5000/api/galerias/condominio/${condominioID}`);
             if (response.ok) {
                 const data = await response.json();
                 setGalerias(data.galerias || []);
@@ -88,7 +84,6 @@ export default function Galeria() {
         }
     }, [condominioID, fetchGalerias, fetchCondominioNome]);
 
-    // Função para criar nova galeria (apenas Admin)
     const handleCriarGaleria = async (e) => {
         e.preventDefault();
         if (!novaGaleriaNome || !condominioID || !userId) {
@@ -103,7 +98,7 @@ export default function Galeria() {
         };
 
         try {
-            const response = await fetch('http://localhost:5000/api/galerias/criar', { // API a ser criada no backend
+            const response = await fetch('http://localhost:5000/api/galerias/criar', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(galeriaData),
@@ -113,7 +108,7 @@ export default function Galeria() {
                 alert('Galeria criada com sucesso!');
                 setShowCriarGaleriaModal(false);
                 setNovaGaleriaNome('');
-                fetchGalerias(); // Recarrega a lista
+                fetchGalerias();
             } else {
                 const errorData = await response.json();
                 console.error('Erro ao criar galeria:', errorData.message || response.statusText);
@@ -131,21 +126,21 @@ export default function Galeria() {
                 <title>{condominioNome ? `${condominioNome} - Galeria de Fotos` : 'Galeria de Fotos - Condomínio'}</title>
             </Head>
 
-            <nav className="navbar navbar-expand-lg shadow-sm" style={{height:'10vh'}}> {/* Usando bg-light, ajuste para sua cor padrão */}
+            <nav className="navbar navbar-expand-lg shadow-sm" style={{height:'10vh'}}> {}
                 <div className="container-fluid">
-                    {/* Logo na Esquerda */}
+                    {}
                     <a className="navbar-brand d-flex align-items-center" href="/home">
                         <Image 
-                            src="/logos/horizontal-escuro-cheio.png" // Ajuste o src para o caminho real da sua logo
+                            src="/logos/horizontal-escuro-cheio.png"
                             alt="VOID Logo" 
                             width={170} 
                             height={170} 
                             priority={true} 
-                            style={{marginLeft:'125px', objectFit: 'contain'}} // objectFit para ajustar imagem
+                            style={{marginLeft:'125px', objectFit: 'contain'}}
                         />
                     </a>
     
-                    {/* Botões alinhados à Direita */}
+                    {}
                     <div className="d-flex align-items-center" style={{marginRight:'125px'}}>
                         <button
                             type="button"
@@ -164,20 +159,20 @@ export default function Galeria() {
                     Galeria de Fotos {condominioNome ? `do Condomínio ${condominioNome}` : 'no Condomínio'}
                 </h1>
 
-                {/* Botões de Ação */}
+                {}
                 <div className="d-flex flex-wrap align-items-center mb-4">
                     {tipoUsuario === 'Administrador' && (
                         <button
                             type="button"
                             className="btn btn-info me-2 rounded-pill"
-                            onClick={() => setShowCriarGaleriaModal(true)} // Abre modal de criação
+                            onClick={() => setShowCriarGaleriaModal(true)}
                         >
                             Criar Nova Galeria
                         </button>
                     )}
                 </div>
 
-                {/* Mensagens de Carregamento/Erro/Vazio */}
+                {}
                 {loading && <p className="text-info mt-4">Carregando galerias...</p>}
                 {error && <p className="text-danger mt-4">{error}</p>}
 
@@ -185,7 +180,7 @@ export default function Galeria() {
                     <p className="text-info mt-4">Nenhuma galeria encontrada para este condomínio.</p>
                 )}
 
-                {/* Lista de Galerias */}
+                {}
                 {!loading && !error && galerias.length > 0 && (
                     <div className="row mt-4">
                         {galerias.map(galeria => (
@@ -205,7 +200,7 @@ export default function Galeria() {
                                             <p className="card-text">
                                                 Criada por: {galeria.criador ? galeria.criador.nome : 'N/A'}
                                             </p>
-                                            {/* Pode adicionar contagem de fotos aqui futuramente */}
+                                            {}
                                         </div>
                                     </div>
                                 </Link>
@@ -215,7 +210,7 @@ export default function Galeria() {
                 )}
             </div>
 
-            {/* MODAL DE CRIAÇÃO DE GALERIA (APENAS ADMIN) */}
+            {}
             {showCriarGaleriaModal && tipoUsuario === 'Administrador' && (
                 <div className="modal fade show d-block" tabIndex="-1" role="dialog" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
                     <div className="modal-dialog modal-dialog-centered" role="document">

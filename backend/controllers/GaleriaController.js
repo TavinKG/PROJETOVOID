@@ -1,17 +1,10 @@
-// controllers/GaleriaController.js
-
 const GaleriaDAO = require('../dao/GaleriaDAO');
 const Galeria = require('../models/Galeria');
 
 class GaleriaController {
 
-    /**
-     * Cria uma nova galeria (álbum de fotos).
-     * @param {object} req Objeto de requisição.
-     * @param {object} res Objeto de resposta.
-     */
     static async criarGaleria(req, res) {
-        const { nome, condominio_id, criador_id } = req.body; // Campos esperados do frontend
+        const { nome, condominio_id, criador_id } = req.body;
 
         if (!nome || !condominio_id || !criador_id) {
             return res.status(400).json({ message: 'Nome da galeria, ID do condomínio e ID do criador são obrigatórios.' });
@@ -19,11 +12,10 @@ class GaleriaController {
 
         try {
             const novaGaleria = new Galeria(
-                null, // ID será gerado pelo banco
+                null,
                 nome,
                 condominio_id,
                 criador_id
-                // fotoCapaUrl opcional, será atualizado se uma foto de capa for definida depois
             );
 
             const galeriaCriada = await GaleriaDAO.criarGaleria(novaGaleria);
@@ -39,11 +31,6 @@ class GaleriaController {
         }
     }
 
-    /**
-     * Lista todas as galerias de um condomínio específico.
-     * @param {object} req Objeto de requisição.
-     * @param {object} res Objeto de resposta.
-     */
     static async listarGalerias(req, res) {
         const { condominioId } = req.params;
 
@@ -65,10 +52,6 @@ class GaleriaController {
             res.status(500).json({ message: `Erro ao listar galerias: ${error.message}` });
         }
     }
-
-    // --- Futuros Métodos Controller para Galeria ---
-    // static async atualizarGaleria(req, res) { ... }
-    // static async deletarGaleria(req, res) { ... }
 }
 
 module.exports = GaleriaController;

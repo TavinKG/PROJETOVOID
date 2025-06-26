@@ -1,15 +1,8 @@
-// controllers/AssembleiaController.js
-
 const AssembleiaDAO = require('../dao/AssembleiaDAO');
 const Assembleia = require('../models/Assembleia');
 
 class AssembleiaController {
 
-    /**
-     * Agenda uma nova assembleia.
-     * @param {object} req Objeto de requisição.
-     * @param {object} res Objeto de resposta.
-     */
     static async agendarAssembleia(req, res) {
         const { titulo, data_hora, descricao, condominio_id, criador_id } = req.body;
 
@@ -17,7 +10,6 @@ class AssembleiaController {
             return res.status(400).json({ message: 'Título, data/hora, ID do condomínio e criador são obrigatórios.' });
         }
 
-        // Validação adicional de data/hora (já feita no frontend, mas bom ter no backend)
         const assembleiaDateTime = new Date(data_hora);
         if (isNaN(assembleiaDateTime.getTime()) || assembleiaDateTime < new Date()) {
             return res.status(400).json({ message: 'Data e hora da assembleia inválidas ou no passado.' });
@@ -25,7 +17,7 @@ class AssembleiaController {
 
         try {
             const novaAssembleia = new Assembleia(
-                null, // ID será gerado pelo banco
+                null,
                 titulo,
                 data_hora,
                 descricao,
@@ -46,11 +38,6 @@ class AssembleiaController {
         }
     }
 
-    /**
-     * Lista assembleias para um condomínio específico.
-     * @param {object} req Objeto de requisição.
-     * @param {object} res Objeto de resposta.
-     */
     static async listarAssembleias(req, res) {
         const { condominioId } = req.params;
 
@@ -73,14 +60,9 @@ class AssembleiaController {
         }
     }
 
-    /**
-     * Permite a um usuário confirmar presença em uma assembleia.
-     * @param {object} req Objeto de requisição.
-     * @param {object} res Objeto de resposta.
-     */
     static async confirmarPresenca(req, res) {
         const { assembleiaId } = req.params;
-        const { usuarioId } = req.body; // ID do usuário que está confirmando
+        const { usuarioId } = req.body;
 
         if (!assembleiaId || !usuarioId) {
             return res.status(400).json({ message: 'ID da assembleia e ID do usuário são obrigatórios para confirmar presença.' });
@@ -104,14 +86,13 @@ class AssembleiaController {
 
     static async listarAssembleias(req, res) {
         const { condominioId } = req.params;
-        const userId = req.headers['x-user-id'] || req.query.userId; // NOVO: Pega o userId do header ou query (melhor do header para autenticação)
+        const userId = req.headers['x-user-id'] || req.query.userId;
 
         if (!condominioId) {
             return res.status(400).json({ message: 'ID do condomínio é obrigatório para listar assembleias.' });
         }
 
         try {
-            // NOVO: Passa o userId para a DAO
             const assembleias = await AssembleiaDAO.listarAssembleiasPorCondominio(condominioId, userId);
             
             if (!assembleias || assembleias.length === 0) {
@@ -126,11 +107,6 @@ class AssembleiaController {
         }
     }
 
-    /**
-     * Lista os participantes que confirmaram presença em uma assembleia.
-     * @param {object} req Objeto de requisição.
-     * @param {object} res Objeto de resposta.
-     */
     static async listarParticipantes(req, res) {
         const { assembleiaId } = req.params;
 

@@ -1,4 +1,3 @@
-// pages/eventos.js
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { useEffect, useState, useCallback } from 'react';
 import Cookies from 'js-cookie';
@@ -12,14 +11,13 @@ export default function Eventos() {
     const userId = Cookies.get('userId');
     const tipoUsuario = Cookies.get('tipoUsuario');
     const [condominioID, setCondominioId] = useState(null);
-    const [condominioNome, setCondominioNome] = useState(''); // NOVO ESTADO: para armazenar o nome do condomínio
+    const [condominioNome, setCondominioNome] = useState('');
     const [eventos, setEventos] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
-    // ESTADOS PARA O MODAL DE AGENDAMENTO (APENAS ADMIN)
     const [showAgendarModal, setShowAgendarModal] = useState(false);
-    const [eventoNome, setEventoNome] = useState(''); // Nome/Título do evento
+    const [eventoNome, setEventoNome] = useState('');
     const [eventoData, setEventoData] = useState('');
     const [eventoHora, setEventoHora] = useState('');
     const [eventoLocal, setEventoLocal] = useState('');
@@ -40,7 +38,6 @@ export default function Eventos() {
         }
     }, [userId, router]);
 
-    // Função para buscar o nome do condomínio (reutilizada)
     const fetchCondominioNome = useCallback(async () => {
         if (!condominioID) return;
         try {
@@ -58,23 +55,20 @@ export default function Eventos() {
         }
     }, [condominioID]);
 
-    // Função para buscar os eventos
     const fetchEventos = useCallback(async () => {
         if (!condominioID) return;
 
         setLoading(true);
         setError(null);
         try {
-            const response = await fetch(`http://localhost:5000/api/eventos/condominio/${condominioID}`); // API já criada no backend
+            const response = await fetch(`http://localhost:5000/api/eventos/condominio/${condominioID}`);
             if (response.ok) {
                 const data = await response.json();
-                const now = new Date(); // Criada uma única vez para este ciclo de vida do useEffect
+                const now = new Date();
                 
-                // Filtra eventos que são no futuro (ou o dia atual, mas ainda não passaram)
                 const futurosEventos = data.eventos ? 
                     data.eventos.filter(e => new Date(e.data_hora).getTime() >= now.getTime()) : [];
                 
-                // Ordena por data e hora futuras
                 setEventos(futurosEventos.sort((a, b) => new Date(a.data_hora).getTime() - new Date(b.data_hora).getTime()));
             } else {
                 const errorData = await response.json();
@@ -98,7 +92,6 @@ export default function Eventos() {
         }
     }, [condominioID, fetchEventos, fetchCondominioNome]);
 
-    // Função para agendar evento (apenas Admin)
     const handleAgendarEvento = async (e) => {
         e.preventDefault();
         if (!eventoNome || !eventoData || !eventoHora || !eventoLocal || !condominioID || !userId) {
@@ -106,10 +99,8 @@ export default function Eventos() {
             return;
         }
 
-        // Cria a data/hora em UTC para envio
         const dataHora = new Date(`${eventoData}T${eventoHora}:00.000Z`); 
         
-        // Validação de data no passado - compara com UTC now
         const now = new Date();
         now.setSeconds(0, 0); 
         const agendamentoUTC = new Date(eventoData + 'T' + eventoHora + ':00.000Z');
@@ -121,7 +112,7 @@ export default function Eventos() {
 
         const eventoDataObj = {
             nome: eventoNome,
-            data_hora: dataHora.toISOString(), // Envia em formato ISO (UTC)
+            data_hora: dataHora.toISOString(),
             local: eventoLocal,
             descricao: eventoDescricao,
             condominio_id: condominioID,
@@ -129,7 +120,7 @@ export default function Eventos() {
         };
 
         try {
-            const response = await fetch('http://localhost:5000/api/eventos/agendar', { // API já criada no backend
+            const response = await fetch('http://localhost:5000/api/eventos/agendar', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(eventoDataObj),
@@ -143,7 +134,7 @@ export default function Eventos() {
                 setEventoHora('');
                 setEventoLocal('');
                 setEventoDescricao('');
-                fetchEventos(); // Recarrega a lista
+                fetchEventos();
             } else {
                 const errorData = await response.json();
                 console.error('Erro ao agendar evento:', errorData.message || response.statusText);
@@ -155,7 +146,6 @@ export default function Eventos() {
         }
     };
 
-    // Função para formatar data e hora para exibição (em UTC)
     const formatDateTime = (isoString) => {
         if (!isoString) return 'N/A';
         const date = new Date(isoString);
@@ -172,21 +162,21 @@ export default function Eventos() {
                 <title>{condominioNome ? `${condominioNome} - Eventos` : 'Eventos - Condomínio'}</title>
             </Head>
 
-            <nav className="navbar navbar-expand-lg shadow-sm" style={{height:'10vh'}}> {/* Usando bg-light, ajuste para sua cor padrão */}
+            <nav className="navbar navbar-expand-lg shadow-sm" style={{height:'10vh'}}> {}
                 <div className="container-fluid">
-                    {/* Logo na Esquerda */}
+                    {}
                     <a className="navbar-brand d-flex align-items-center" href="/home">
                         <Image 
-                            src="/logos/horizontal-escuro-cheio.png" // Ajuste o src para o caminho real da sua logo
+                            src="/logos/horizontal-escuro-cheio.png"
                             alt="VOID Logo" 
                             width={170} 
                             height={170} 
                             priority={true} 
-                            style={{marginLeft:'125px', objectFit: 'contain'}} // objectFit para ajustar imagem
+                            style={{marginLeft:'125px', objectFit: 'contain'}}
                         />
                     </a>
     
-                    {/* Botões alinhados à Direita */}
+                    {}
                     <div className="d-flex align-items-center" style={{marginRight:'125px'}}>
                         <button
                             type="button"
@@ -205,20 +195,20 @@ export default function Eventos() {
                     Eventos {condominioNome ? `do Condomínio ${condominioNome}` : 'no Condomínio'}
                 </h1>
 
-                {/* Botões de Ação */}
+                {}
                 <div className="d-flex flex-wrap align-items-center mb-4">
                     {tipoUsuario === 'Administrador' && (
                         <button
                             type="button"
                             className="btn btn-info me-2 rounded-pill"
-                            onClick={() => setShowAgendarModal(true)} // Abre modal de agendamento
+                            onClick={() => setShowAgendarModal(true)}
                         >
                             Agendar Novo Evento
                         </button>
                     )}
                 </div>
 
-                {/* Mensagens de Carregamento/Erro/Vazio */}
+                {}
                 {loading && <p className="text-info mt-4">Carregando eventos...</p>}
                 {error && <p className="text-danger mt-4">{error}</p>}
 
@@ -226,7 +216,7 @@ export default function Eventos() {
                     <p className="text-info mt-4">Nenhum evento agendado para este condomínio.</p>
                 )}
 
-                {/* Lista de Eventos */}
+                {}
                 {!loading && !error && eventos.length > 0 && (
                     <div className="row mt-4">
                         {eventos.map(evento => (
@@ -254,7 +244,7 @@ export default function Eventos() {
                 )}
             </div>
 
-            {/* MODAL PARA AGENDAR EVENTO (APENAS ADMIN) */}
+            {}
             {showAgendarModal && tipoUsuario === 'Administrador' && (
                 <div className="modal fade show d-block" tabIndex="-1" role="dialog" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
                     <div className="modal-dialog modal-dialog-centered" role="document">
@@ -295,7 +285,7 @@ export default function Eventos() {
                                             className="form-control"
                                             value={eventoData}
                                             onChange={(e) => setEventoData(e.target.value)}
-                                            min={new Date().toISOString().split('T')[0]} // Data mínima é hoje
+                                            min={new Date().toISOString().split('T')[0]}
                                             required
                                         />
                                     </div>

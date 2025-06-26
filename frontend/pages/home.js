@@ -90,7 +90,7 @@ export default function Home() {
       }
   
       const usuarioCondominioData = {
-        status: 0, // Status de ativo
+        status: 0,
         usuarioId: userId,
         condominioId: condominioEncontrado.id,
       };
@@ -104,7 +104,7 @@ export default function Home() {
       if (response.ok) {
         alert('Pedido de ingresso no condomínio realizado com sucesso!');
         setShowIngressoModal(false);
-        fetchCondominiosUsuario(); // Atualiza os condomínios vinculados
+        fetchCondominiosUsuario();
       } else {
         const errorData = await response.json();
         alert(`Erro ao ingressar no condomínio: ${errorData.message}`);
@@ -137,8 +137,8 @@ export default function Home() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const rawCnpj = condominioCnpjCadastro.replace(/\D/g, ''); // Remove caracteres não numéricos
-    if (rawCnpj.length !== 14) { // CNPJ tem 14 dígitos
+    const rawCnpj = condominioCnpjCadastro.replace(/\D/g, '');
+    if (rawCnpj.length !== 14) {
       alert('Por favor, digite um CNPJ válido com 14 dígitos.');
       return;
     }
@@ -195,9 +195,7 @@ export default function Home() {
 
   const formatCnpj = (cnpj) => {
     if (!cnpj) return '';
-    // Remove caracteres não numéricos
     const rawCnpj = cnpj.replace(/\D/g, '');
-    // Aplica a máscara
     if (rawCnpj.length <= 2) return rawCnpj;
     if (rawCnpj.length <= 5) return `${rawCnpj.slice(0, 2)}.${rawCnpj.slice(2)}`;
     if (rawCnpj.length <= 8) return `${rawCnpj.slice(0, 2)}.${rawCnpj.slice(2, 5)}.${rawCnpj.slice(5)}`;
@@ -207,7 +205,7 @@ export default function Home() {
 
   return (
     <div className="container mt-5">
-    {/* Backdrop escuro para modal */}
+    {}
     {(showModal || showIngressoModal) && (
       <div
         className="modal-backdrop fade show"
@@ -226,7 +224,7 @@ export default function Home() {
       <h1>Bem-vindo à Home!</h1>
       <p>{mensagem}</p>
 
-      {/* Exibição dos condomínios relacionados ao usuário */}
+      {}
       {condominiosUsuario.length > 0 ? (
         <div className="mt-4">
           <h2>Seus Condomínios</h2>
@@ -248,7 +246,7 @@ export default function Home() {
 
       <LogoutButton />
 
-      {/* Modal para ingresso no condomínio */}
+      {}
       {showIngressoModal && (
         <div className="modal fade show d-block" tabIndex="-1" role="dialog" aria-labelledby="modalIngressoCondominio" aria-hidden="true">
           <div className="modal-dialog modal-dialog-centered" role="document" >
@@ -290,7 +288,7 @@ export default function Home() {
         </div>
       )}
 
-      {/* Modal de criação do condomínio (já existente) */}
+      {}
       {showModal && (
         <div className="modal fade show d-block" tabIndex="-1" role="dialog" aria-labelledby="modalCriacaoCondominio" aria-hidden="true" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
           <div className="modal-dialog modal-dialog-centered" role="document">
@@ -307,11 +305,11 @@ export default function Home() {
                   </div>
                   <div className="mb-3">
                     <label htmlFor="cnpj" className="form-label">CNPJ</label>
-                    <InputMask // Componente que aplica a máscara
+                    <InputMask
                       type="text"
                       id="cnpj"
                       className="form-control"
-                      mask="99.999.999/9999-99" // <- A MÁSCARA ESTÁ AQUI
+                      mask="99.999.999/9999-99"
                       value={condominioCnpjCadastro}
                       onChange={(e) => setCondominioCnpjCadastro(e.target.value)}
                       required

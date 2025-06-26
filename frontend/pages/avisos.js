@@ -1,4 +1,3 @@
-// pages/avisos.js
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { useEffect, useState, useCallback } from 'react';
 import Cookies from 'js-cookie';
@@ -11,7 +10,7 @@ export default function Avisos() {
     const router = useRouter();
     const userId = Cookies.get('userId');
     const [condominioID, setCondominioId] = useState(null);
-    const [condominioNome, setCondominioNome] = useState(''); // NOVO ESTADO: para armazenar o nome do condomínio
+    const [condominioNome, setCondominioNome] = useState('');
     const [modalOpen, setModalOpen] = useState(false);
     const [titulo, setTitulo] = useState('');
     const [mensagem, setMensagem] = useState('');
@@ -27,17 +26,16 @@ export default function Avisos() {
         }
     }, [tipoUsuario, userId, router]);
 
-    // NOVO: Função para buscar o nome do condomínio
     const fetchCondominioNome = useCallback(async () => {
         if (!condominioID) return;
         try {
             const response = await fetch(`http://localhost:5000/api/condominios/${condominioID}`);
             if (response.ok) {
                 const data = await response.json();
-                setCondominioNome(data.nome); // Assume que a API retorna um objeto com a propriedade 'nome'
+                setCondominioNome(data.nome);
             } else {
                 console.error('Erro ao buscar nome do condomínio:', response.statusText);
-                setCondominioNome('Condomínio Desconhecido'); // Fallback
+                setCondominioNome('Condomínio Desconhecido');
             }
         } catch (error) {
             console.error('Erro de rede ao buscar nome do condomínio:', error);
@@ -67,9 +65,9 @@ export default function Avisos() {
     useEffect(() => {
         if (condominioID) {
             fetchListaAvisos();
-            fetchCondominioNome(); // NOVO: Chama a função para buscar o nome
+            fetchCondominioNome();
         }
-    }, [condominioID, fetchListaAvisos, fetchCondominioNome]); // Adiciona fetchCondominioNome às dependências
+    }, [condominioID, fetchListaAvisos, fetchCondominioNome]);
 
     const criarAviso = async () => {
         const avisoData = {
@@ -110,27 +108,27 @@ export default function Avisos() {
     return (
         <>
             <Head>
-                {/* Título da página com o nome do condomínio */}
+                {}
                 <title>{condominioNome ? `${condominioNome} - Avisos` : 'Avisos - Condomínio'}</title>
             </Head>
 
-            <nav className="navbar navbar-expand-lg shadow-sm" style={{height:'10vh'}}> {/* Usando bg-light, ajuste para sua cor padrão */}
+            <nav className="navbar navbar-expand-lg shadow-sm" style={{height:'10vh'}}> {}
                 <div className="container-fluid">
-                    {/* Logo na Esquerda */}
+                    {}
                     <a className="navbar-brand d-flex align-items-center" href="/home">
                         <Image 
-                            src="/logos/horizontal-escuro-cheio.png" // Ajuste o src para o caminho real da sua logo
+                            src="/logos/horizontal-escuro-cheio.png"
                             alt="VOID Logo" 
                             width={170} 
                             height={170} 
                             priority={true} 
-                            style={{marginLeft:'125px', objectFit: 'contain'}} // objectFit para ajustar imagem
+                            style={{marginLeft:'125px', objectFit: 'contain'}}
                         />
                     </a>
     
-                    {/* Botões alinhados à Direita */}
+                    {}
                     <div className="d-flex align-items-center" style={{marginRight:'125px'}}>
-                        {/* Botão de Voltar */}
+                        {}
                         <button
                             type="button"
                             className="btn btn-secondary me-3 rounded-pill"
@@ -144,10 +142,10 @@ export default function Avisos() {
             </nav>
 
             <div className="container mt-5">
-                {/* Título principal da página com o nome do condomínio */}
+                {}
                 <h1 className="mb-4">
                     Avisos do Condomínio {condominioNome ? `${condominioNome}` : ''}
-                    {/* Removido ` (ID: ${condominioID})` */}
+                    {}
                 </h1>
 
                 {tipoUsuario === 'Administrador' && (
@@ -160,7 +158,7 @@ export default function Avisos() {
                     </button>
                 )}
 
-                {/* Modal de criação de aviso */}
+                {}
                 {modalOpen && (
                     <div className="modal d-block" tabIndex="-1" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
                         <div className="modal-dialog modal-dialog-centered">

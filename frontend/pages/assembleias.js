@@ -1,4 +1,3 @@
-// pages/assembleias.js
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { useEffect, useState, useCallback } from 'react';
 import Cookies from 'js-cookie';
@@ -12,7 +11,7 @@ export default function Assembleias() {
     const userId = Cookies.get('userId');
     const tipoUsuario = Cookies.get('tipoUsuario');
     const [condominioID, setCondominioId] = useState(null);
-    const [condominioNome, setCondominioNome] = useState(''); // NOVO ESTADO: para armazenar o nome do condomínio
+    const [condominioNome, setCondominioNome] = useState('');
     const [assembleias, setAssembleias] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -45,7 +44,6 @@ export default function Assembleias() {
         }
     }, [userId, router]);
 
-    // NOVO: Função para buscar o nome do condomínio
     const fetchCondominioNome = useCallback(async () => {
         if (!condominioID) return;
         try {
@@ -55,7 +53,7 @@ export default function Assembleias() {
                 setCondominioNome(data.nome);
             } else {
                 console.error('Erro ao buscar nome do condomínio:', response.statusText);
-                setCondominioNome('Condomínio Desconhecido'); // Fallback
+                setCondominioNome('Condomínio Desconhecido');
             }
         } catch (error) {
             console.error('Erro de rede ao buscar nome do condomínio:', error);
@@ -125,9 +123,9 @@ export default function Assembleias() {
     useEffect(() => {
         if (condominioID) {
             fetchAssembleias();
-            fetchCondominioNome(); // NOVO: Chama a função para buscar o nome
+            fetchCondominioNome();
         }
-    }, [condominioID, fetchAssembleias, fetchCondominioNome]); // Adiciona fetchCondominioNome às dependências
+    }, [condominioID, fetchAssembleias, fetchCondominioNome]);
 
     const handleAgendarAssembleia = async (e) => {
         e.preventDefault();
@@ -218,7 +216,6 @@ export default function Assembleias() {
         setErrorParticipantes(null);
     };
 
-    // Função para formatar data e hora para exibição (em UTC)
     const formatDateTime = (isoString) => {
         if (!isoString) return 'N/A';
         const date = new Date(isoString);
@@ -232,25 +229,25 @@ export default function Assembleias() {
     return (
         <>
             <Head>
-                {/* Título da página com o nome do condomínio */}
+                {}
                 <title>{condominioNome ? `${condominioNome} - Assembleias` : 'Assembleias - Condomínio'}</title>
             </Head>
 
-            <nav className="navbar navbar-expand-lg shadow-sm" style={{height:'10vh'}}> {/* Usando bg-light, ajuste para sua cor padrão */}
+            <nav className="navbar navbar-expand-lg shadow-sm" style={{height:'10vh'}}> {}
                 <div className="container-fluid">
-                    {/* Logo na Esquerda */}
+                    {}
                     <a className="navbar-brand d-flex align-items-center" href="/home">
                         <Image 
-                            src="/logos/horizontal-escuro-cheio.png" // Ajuste o src para o caminho real da sua logo
+                            src="/logos/horizontal-escuro-cheio.png"
                             alt="VOID Logo" 
                             width={170} 
                             height={170} 
                             priority={true} 
-                            style={{marginLeft:'125px', objectFit: 'contain'}} // objectFit para ajustar imagem
+                            style={{marginLeft:'125px', objectFit: 'contain'}}
                         />
                     </a>
     
-                    {/* Botões alinhados à Direita */}
+                    {}
                     <div className="d-flex align-items-center" style={{marginRight:'125px'}}>
                         <button
                             type="button"
@@ -265,13 +262,13 @@ export default function Assembleias() {
             </nav>
 
             <div className="container mt-5">
-                {/* Título principal da página com o nome do condomínio */}
+                {}
                 <h1 className="mb-4">
                     Assembleias {condominioNome ? `do Condomínio ${condominioNome}` : 'do Condomínio'}
-                    {/* REMOVIDO: {condominioID && !condominioNome && ` (ID: ${condominioID})`} */}
+                    {}
                 </h1>
 
-                {/* Botões de Ação */}
+                {}
                 <div className="d-flex flex-wrap align-items-center mb-4">
                     {tipoUsuario === 'Administrador' && (
                         <button
@@ -284,7 +281,7 @@ export default function Assembleias() {
                     )}
                 </div>
 
-                {/* Mensagens de Carregamento/Erro/Vazio */}
+                {}
                 {loading && <p className="text-info mt-4">Carregando assembleias...</p>}
                 {error && <p className="text-danger mt-4">{error}</p>}
 
@@ -292,7 +289,7 @@ export default function Assembleias() {
                     <p className="text-info mt-4">Nenhuma assembleia agendada para este condomínio.</p>
                 )}
 
-                {/* Lista de Assembleias */}
+                {}
                 {!loading && !error && assembleias.length > 0 && (
                     <div className="row mt-4">
                         {assembleias.map(assembleia => (
@@ -310,7 +307,7 @@ export default function Assembleias() {
                                             <strong>Agendada por:</strong> {assembleia.criador ? assembleia.criador.nome : 'N/A'}
                                         </p>
 
-                                        {/* Ações de Morador (Confirmar Presença) */}
+                                        {}
                                         {tipoUsuario === 'Morador' && (
                                             <div className="mt-3">
                                                 {assembleia.presencaConfirmada ? (
@@ -326,7 +323,7 @@ export default function Assembleias() {
                                             </div>
                                         )}
 
-                                        {/* Ações de Administrador (Gerenciar) */}
+                                        {}
                                         {tipoUsuario === 'Administrador' && (
                                             <div className="mt-3">
                                                 <button 
@@ -346,7 +343,7 @@ export default function Assembleias() {
                 )}
             </div>
 
-            {/* MODAL PARA AGENDAR ASSEMBLEIA (APENAS ADMIN) */}
+            {}
             {showAgendarModal && tipoUsuario === 'Administrador' && (
                 <div className="modal fade show d-block" tabIndex="-1" role="dialog" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
                     <div className="modal-dialog modal-dialog-centered" role="document">
@@ -376,7 +373,7 @@ export default function Assembleias() {
                                             className="form-control"
                                             value={assembleiaDate}
                                             onChange={(e) => setAssembleiaDate(e.target.value)}
-                                            min={new Date().toISOString().split('T')[0]} // Data mínima é hoje
+                                            min={new Date().toISOString().split('T')[0]}
                                             required
                                         />
                                     </div>
@@ -423,7 +420,7 @@ export default function Assembleias() {
                 </div>
             )}
 
-            {/* MODAL PARA LISTAR PARTICIPANTES (APENAS ADMIN) */}
+            {}
             {showParticipantesModal && tipoUsuario === 'Administrador' && (
                 <div className="modal fade show d-block" tabIndex="-1" role="dialog" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
                     <div className="modal-dialog modal-dialog-centered" role="document">

@@ -1,4 +1,3 @@
-// pages/gerenciar-reservas.js
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { useEffect, useState, useCallback } from 'react';
 import Cookies from 'js-cookie';
@@ -12,12 +11,11 @@ export default function GerenciarReservas() {
     const userId = Cookies.get('userId'); 
     const tipoUsuario = Cookies.get('tipoUsuario'); 
     const [condominioID, setCondominioId] = useState(null);
-    const [condominioNome, setCondominioNome] = useState(''); // Estado para armazenar o nome do condomínio
+    const [condominioNome, setCondominioNome] = useState('');
     const [reservas, setReservas] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
-    // ESTADOS PARA FILTROS
     const [filterAreaId, setFilterAreaId] = useState('');
     const [filterStatus, setFilterStatus] = useState('');
     const [filterDate, setFilterDate] = useState('');
@@ -38,7 +36,6 @@ export default function GerenciarReservas() {
         }
     }, [userId, tipoUsuario, router]);
 
-    // Função para buscar o nome do condomínio
     const fetchCondominioNome = useCallback(async () => {
         if (!condominioID) return;
         try {
@@ -48,7 +45,7 @@ export default function GerenciarReservas() {
                 setCondominioNome(data.nome);
             } else {
                 console.error('Erro ao buscar nome do condomínio:', response.statusText);
-                setCondominioNome('Condomínio Desconhecido'); // Fallback
+                setCondominioNome('Condomínio Desconhecido');
             }
         } catch (error) {
             console.error('Erro de rede ao buscar nome do condomínio:', error);
@@ -111,7 +108,7 @@ export default function GerenciarReservas() {
         if (condominioID) {
             fetchReservas();
             fetchAreasComunsParaFiltro();
-            fetchCondominioNome(); // Chama a função para buscar o nome
+            fetchCondominioNome();
         }
     }, [condominioID, fetchReservas, fetchAreasComunsParaFiltro, fetchCondominioNome]);
 
@@ -156,25 +153,25 @@ export default function GerenciarReservas() {
     return (
         <>
             <Head>
-                {/* NOVO: Título da página com o nome do condomínio */}
+                {}
                 <title>{condominioNome ? `${condominioNome} - Gerenciar Reservas` : 'Gerenciar Reservas - Condomínio'}</title>
             </Head>
 
-            <nav className="navbar navbar-expand-lg shadow-sm" style={{height:'10vh'}}> {/* Usando bg-light, ajuste para sua cor padrão */}
+            <nav className="navbar navbar-expand-lg shadow-sm" style={{height:'10vh'}}> {}
                 <div className="container-fluid">
-                    {/* Logo na Esquerda */}
+                    {}
                     <a className="navbar-brand d-flex align-items-center" href="/home">
                         <Image 
-                            src="/logos/horizontal-escuro-cheio.png" // Ajuste o src para o caminho real da sua logo
+                            src="/logos/horizontal-escuro-cheio.png"
                             alt="VOID Logo" 
                             width={170} 
                             height={170} 
                             priority={true} 
-                            style={{marginLeft:'125px', objectFit: 'contain'}} // objectFit para ajustar imagem
+                            style={{marginLeft:'125px', objectFit: 'contain'}}
                         />
                     </a>
     
-                    {/* Botões alinhados à Direita */}
+                    {}
                     <div className="d-flex align-items-center" style={{marginRight:'125px'}}>
                         <button
                             type="button"
@@ -190,13 +187,13 @@ export default function GerenciarReservas() {
             </nav>
 
             <div className="container mt-5">
-                {/* NOVO: Título principal da página com o nome do condomínio */}
+                {}
                 <h1 className="mb-4">
                     {condominioNome ? `Gerenciar Reservas do Condomínio ${condominioNome}` : 'Gerenciar Reservas do Condomínio'}
-                    {/* REMOVIDO: {condominioID && !condominioNome && ` (ID: ${condominioID})`} */}
+                    {}
                 </h1>
 
-                {/* Seção de Filtros */}
+                {}
                 <div className="mt-4 mb-4 p-3 rounded-4" style={{border: '2px solid #4fc1e9'}}>
                     <h4>Filtros</h4>
                     <div className="row g-3">
@@ -226,7 +223,7 @@ export default function GerenciarReservas() {
                     </div>
                 </div>
 
-                {/* Mensagens de Carregamento/Erro/Vazio */}
+                {}
                 {loading && <p className="text-info mt-4">Carregando reservas...</p>}
                 {error && <p className="text-danger mt-4">{error}</p>}
 
@@ -234,7 +231,7 @@ export default function GerenciarReservas() {
                     <p className="text-info mt-4">Nenhuma reserva encontrada para este condomínio.</p>
                 )}
 
-                {/* Lista de Reservas para o Administrador */}
+                {}
                 {!loading && !error && reservas.length > 0 && (
                     <div className="row mt-4">
                         {reservas.map(reserva => (

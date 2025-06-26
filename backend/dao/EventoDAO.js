@@ -1,7 +1,6 @@
-// dao/EventoDAO.js
 
-const supabase = require('../config/supabase'); // Configuração do Supabase
-const Evento = require('../models/Evento'); // Classe Evento
+const supabase = require('../config/supabase');
+const Evento = require('../models/Evento');
 
 class EventoDAO {
 
@@ -14,7 +13,7 @@ class EventoDAO {
         const { nome, dataHora, local, descricao, condominioId, criadorId } = evento;
 
         const { data, error } = await supabase
-            .from('evento') // Nome da sua tabela de eventos
+            .from('evento')
             .insert([{
                 nome: nome,
                 data_hora: dataHora,
@@ -23,7 +22,7 @@ class EventoDAO {
                 condominio_id: condominioId,
                 criador_id: criadorId
             }])
-            .select(); // Retorna os dados inseridos
+            .select();
 
         if (error) {
             console.error('Erro Supabase ao criar evento:', error);
@@ -31,7 +30,7 @@ class EventoDAO {
         }
 
         console.log("Evento criado com sucesso:", data);
-        return data; // Retorna os dados inseridos
+        return data;
     }
 
     /**
@@ -62,9 +61,6 @@ class EventoDAO {
                 throw new Error(`Erro ao listar eventos: ${error.message}`);
             }
 
-            // CORREÇÃO AQUI: Garante que 'data' é um array antes de mapear.
-            // Se 'data' for null ou undefined (ex: nenhuma linha encontrada sem erro),
-            // ele inicializa como um array vazio para evitar o ReferenceError.
             const eventosFormatadas = data ? data.map(evento => ({
                 ...evento,
                 criador: evento.criador || null
@@ -77,11 +73,6 @@ class EventoDAO {
         }
     }
 
-    // Futuras funções para o módulo de Eventos (ex: confirmar presença, editar, excluir)
-    // static async confirmarPresenca(eventoId, usuarioId) { ... }
-    // static async verificarPresenca(eventoId, usuarioId) { ... }
-    // static async listarParticipantesEvento(eventoId) { ... }
-    // static async deletarEvento(eventoId) { ... }
 }
 
 module.exports = EventoDAO;

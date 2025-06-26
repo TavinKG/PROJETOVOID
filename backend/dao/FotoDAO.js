@@ -1,9 +1,7 @@
-// dao/FotoDAO.js
 
-const supabase = require('../config/supabase'); // Configuração do Supabase
-const Foto = require('../models/Foto'); // Classe Foto
+const supabase = require('../config/supabase');
+const Foto = require('../models/Foto');
 
-// Nome do seu bucket de Storage no Supabase
 const BUCKET_NAME = 'void-photos'; 
 
 class FotoDAO {
@@ -16,14 +14,13 @@ class FotoDAO {
      */
     static async uploadFotoToStorage(file, userId) {
         try {
-            // Caminho no Storage: [bucket]/[userId]/[timestamp]-[original_filename]
             const filePath = `${userId}/${Date.now()}-${file.originalname}`;
 
             const { data, error } = await supabase.storage
                 .from(BUCKET_NAME)
                 .upload(filePath, file.buffer, {
                     contentType: file.mimetype,
-                    upsert: false // Não sobrescreve se o arquivo já existir
+                    upsert: false
                 });
 
             if (error) {
@@ -31,7 +28,6 @@ class FotoDAO {
                 throw new Error(`Erro ao fazer upload da foto: ${error.message}`);
             }
 
-            // Retorna a URL pública da imagem
             const { data: publicUrlData } = supabase.storage
                 .from(BUCKET_NAME)
                 .getPublicUrl(filePath);
@@ -53,7 +49,7 @@ class FotoDAO {
         const { url, descricao, galeriaId, usuarioId, status } = foto;
 
         const { data, error } = await supabase
-            .from('foto') // Nome da sua tabela de fotos
+            .from('foto')
             .insert([{
                 url: url,
                 descricao: descricao,
@@ -79,7 +75,7 @@ class FotoDAO {
      * @param {string} userRole O tipo de usuário logado ('Morador', 'Administrador').
      * @returns {Promise<Array>} Um array de objetos de foto.
      */
-    static async listarFotosPorGaleria(galeriaId, userRole = 'Morador') { // NOVO: userRole como parâmetro
+    static async listarFotosPorGaleria(galeriaId, userRole = 'Morador') {
         try {
             let query = supabase
                 .from('foto')
@@ -95,12 +91,9 @@ class FotoDAO {
                 `)
                 .eq('galeria_id', galeriaId);
 
-            // NOVO: Lógica de filtragem baseada no papel do usuário
             if (userRole === 'Morador') {
-                query = query.eq('status', 'aprovada'); // Moradores veem apenas fotos aprovadas
+                query = query.eq('status', 'aprovada');
             }
-            // Administradores veem todas por padrão, pois não há filtro de status aqui se não for morador.
-            // Se você quiser que o admin possa filtrar por status, precisaria de outro parâmetro 'filterStatus'
 
             query = query.order('criado_em', { ascending: false });
 
@@ -134,7 +127,7 @@ class FotoDAO {
             .from('foto')
             .update({ status: novoStatus })
             .eq('id', fotoId)
-            .select(); // Retorna os dados atualizados
+            .select();
 
         if (error) {
             console.error('Erro Supabase ao alterar status da foto:', error);
@@ -150,7 +143,6 @@ class FotoDAO {
      */
     static async deletarFoto(fotoId) {
         try {
-            // Primeiro, busca a URL da foto no banco de dados
             const { data: fotoData, error: fotoError } = await supabase
                 .from('foto')
                 .select('url')
@@ -158,18 +150,16 @@ class FotoDAO {
                 .single();
 
             if (fotoError || !fotoData) {
-                if (fotoError && fotoError.code === 'PGRST116') { // No rows found
+                if (fotoError && fotoError.code === 'PGRST116') {
                     throw new Error('Foto não encontrada no banco de dados.');
                 }
                 throw new Error(`Erro ao buscar URL da foto para exclusão: ${fotoError?.message || 'Erro desconhecido'}`);
             }
 
             const photoUrl = fotoData.url;
-            // Extrai o caminho do arquivo do Storage da URL pública
             const pathSegments = photoUrl.split('/');
             const filePathInStorage = pathSegments.slice(pathSegments.indexOf(BUCKET_NAME) + 1).join('/');
 
-            // Deleta do Storage
             const { error: storageError } = await supabase.storage
                 .from(BUCKET_NAME)
                 .remove([filePathInStorage]);
@@ -179,7 +169,6 @@ class FotoDAO {
                 throw new Error(`Erro ao deletar arquivo do Storage: ${storageError.message}`);
             }
 
-            // Depois, deleta o registro do banco de dados
             const { error: dbError } = await supabase
                 .from('foto')
                 .delete()

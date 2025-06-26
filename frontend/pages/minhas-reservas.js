@@ -1,4 +1,3 @@
-// pages/minhas-reservas.js
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { useEffect, useState, useCallback } from 'react';
 import Cookies from 'js-cookie';
@@ -11,16 +10,15 @@ export default function MinhasReservas() {
     const router = useRouter();
     const userId = Cookies.get('userId'); 
     const [condominioID, setCondominioId] = useState(null);
-    const [condominioNome, setCondominioNome] = useState(''); // NOVO ESTADO: para armazenar o nome do condomínio
+    const [condominioNome, setCondominioNome] = useState('');
     const [minhasReservas, setMinhasReservas] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
     useEffect(() => {
-        if (!userId) { // Redireciona se não houver usuário logado
+        if (!userId) {
             router.push('/login');
         } else {
-            // Pega o ID do condomínio da URL
             const { condominioId } = router.query;
             if (condominioId) {
                 setCondominioId(condominioId);
@@ -32,17 +30,16 @@ export default function MinhasReservas() {
         }
     }, [userId, router]);
 
-    // NOVO: Função para buscar o nome do condomínio
     const fetchCondominioNome = useCallback(async () => {
         if (!condominioID) return;
         try {
             const response = await fetch(`http://localhost:5000/api/condominios/${condominioID}`);
             if (response.ok) {
                 const data = await response.json();
-                setCondominioNome(data.nome); // Assume que a API retorna um objeto com a propriedade 'nome'
+                setCondominioNome(data.nome);
             } else {
                 console.error('Erro ao buscar nome do condomínio:', response.statusText);
-                setCondominioNome('Condomínio Desconhecido'); // Fallback
+                setCondominioNome('Condomínio Desconhecido');
             }
         } catch (error) {
             console.error('Erro de rede ao buscar nome do condomínio:', error);
@@ -52,7 +49,7 @@ export default function MinhasReservas() {
 
 
     const fetchMinhasReservas = useCallback(async () => {
-        if (!userId || !condominioID) return; // Só busca se tiver ambos os IDs
+        if (!userId || !condominioID) return;
 
         setLoading(true);
         setError(null);
@@ -80,11 +77,10 @@ export default function MinhasReservas() {
     useEffect(() => {
         if (userId && condominioID) {
             fetchMinhasReservas();
-            fetchCondominioNome(); // NOVO: Chama a função para buscar o nome
+            fetchCondominioNome();
         }
-    }, [userId, condominioID, fetchMinhasReservas, fetchCondominioNome]); // Adiciona fetchCondominioNome às dependências
+    }, [userId, condominioID, fetchMinhasReservas, fetchCondominioNome]);
 
-    // Função para formatar o status da reserva
     const formatStatus = (status) => {
         switch (status) {
             case '0': return <span className="badge bg-warning text-dark">Aguardando Aprovação</span>;
@@ -98,27 +94,27 @@ export default function MinhasReservas() {
     return (
         <>
             <Head>
-                {/* Título da página com o nome do condomínio */}
+                {}
                 <title>{condominioNome ? `${condominioNome} - Minhas Reservas` : 'Minhas Reservas - Condomínio'}</title>
             </Head>
 
-            <nav className="navbar navbar-expand-lg shadow-sm" style={{height:'10vh'}}> {/* Usando bg-light, ajuste para sua cor padrão */}
+            <nav className="navbar navbar-expand-lg shadow-sm" style={{height:'10vh'}}> {}
                 <div className="container-fluid">
-                    {/* Logo na Esquerda */}
+                    {}
                     <a className="navbar-brand d-flex align-items-center" href="/home">
                         <Image 
-                            src="/logos/horizontal-escuro-cheio.png" // Ajuste o src para o caminho real da sua logo
+                            src="/logos/horizontal-escuro-cheio.png"
                             alt="VOID Logo" 
                             width={170} 
                             height={170} 
                             priority={true} 
-                            style={{marginLeft:'125px', objectFit: 'contain'}} // objectFit para ajustar imagem
+                            style={{marginLeft:'125px', objectFit: 'contain'}}
                         />
                     </a>
     
-                    {/* Botões alinhados à Direita */}
+                    {}
                     <div className="d-flex align-items-center" style={{marginRight:'125px'}}>
-                        {/* Botão de Voltar para o Condomínio */}
+                        {}
                         <button
                             type="button"
                             className="btn btn-secondary me-2 rounded-pill"
@@ -133,10 +129,10 @@ export default function MinhasReservas() {
             </nav>
 
             <div className="container mt-5">
-                {/* Título principal da página com o nome do condomínio */}
+                {}
                 <h1 className="mb-4">
                     Minhas Reservas {condominioNome ? `no Condomínio ${condominioNome}` : 'no Condomínio'}
-                    {/* Removido ` (ID: ${condominioID})` */}
+                    {}
                 </h1>
 
                 {loading && <p className="text-info mt-4">Carregando suas reservas...</p>}
@@ -152,14 +148,12 @@ export default function MinhasReservas() {
                             const dataInicioUTC = new Date(reserva.data_inicio);
                             const dataFimUTC = new Date(reserva.data_fim);
 
-                            // Formatar a data para DD/MM/YYYY
                             const dataFormatada = dataInicioUTC.toLocaleDateString('pt-BR', {
                                 day: '2-digit',
                                 month: '2-digit',
                                 year: 'numeric'
                             });
 
-                            // Formatar o horário para HH:MM em UTC (para evitar deslocamento de fuso horário local)
                             const horarioInicioFormatado = dataInicioUTC.toLocaleTimeString('pt-BR', {
                                 hour: '2-digit',
                                 minute: '2-digit',

@@ -1,5 +1,5 @@
-const UsuarioCondominioDAO = require('../dao/UsuarioCondominioDAO'); // DAO para interagir com o banco
-const UsuarioCondominio = require('../models/UsuarioCondominio'); // Classe modelo
+const UsuarioCondominioDAO = require('../dao/UsuarioCondominioDAO');
+const UsuarioCondominio = require('../models/UsuarioCondominio');
 
 class UsuarioCondominioController {
 
@@ -7,10 +7,8 @@ class UsuarioCondominioController {
     const { status, usuarioId, condominioId } = req.body;
 
     try {
-      // Cria o objeto UsuarioCondominio
       const usuarioCondominio = new UsuarioCondominio(null, status, usuarioId, condominioId);
 
-      // Chama a DAO para inserir o vínculo no banco
       const vinculoCriado = await UsuarioCondominioDAO.inserirUsuarioCondominio(usuarioCondominio);
 
       res.status(201).json({
@@ -28,7 +26,6 @@ class UsuarioCondominioController {
     console.log(usuarioId, condominioId, status);
 
     try {
-      // Chama a DAO para atualizar o status do vínculo
       const vinculoAtualizado = await UsuarioCondominioDAO.alterarStatus(usuarioId, condominioId, status);
 
       res.status(200).json({
@@ -45,7 +42,6 @@ class UsuarioCondominioController {
     const { userId } = req.params;
 
     try {
-      // Chama a DAO para buscar os condomínios ativos do usuário
       const condominiosAtivos = await UsuarioCondominioDAO.buscarCondominiosAtivos(userId);
 
       if (!condominiosAtivos.length) {
@@ -66,7 +62,6 @@ class UsuarioCondominioController {
     const { condominioId } = req.params;
 
     try {
-      // Chama a DAO para buscar os condomínios ativos do usuário
       const usuariosPendentes = await UsuarioCondominioDAO.buscarSolicitacoes(condominioId);
 
       if (!usuariosPendentes.length) {

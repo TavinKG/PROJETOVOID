@@ -1,7 +1,6 @@
-// dao/GaleriaDAO.js
 
-const supabase = require('../config/supabase'); // Configuração do Supabase
-const Galeria = require('../models/Galeria'); // Classe Galeria
+const supabase = require('../config/supabase');
+const Galeria = require('../models/Galeria');
 
 class GaleriaDAO {
 
@@ -14,12 +13,12 @@ class GaleriaDAO {
         const { nome, condominioId, criadorId, fotoCapaUrl } = galeria;
 
         const { data, error } = await supabase
-            .from('galeria') // Nome da sua tabela de galerias
+            .from('galeria')
             .insert([{
                 nome: nome,
                 condominio_id: condominioId,
                 criador_id: criadorId,
-                foto_capa_url: fotoCapaUrl // Salva a URL da capa
+                foto_capa_url: fotoCapaUrl
             }])
             .select();
 
@@ -74,22 +73,22 @@ class GaleriaDAO {
         try {
             const { data, error } = await supabase
                 .from('foto')
-                .select('id, url') // Seleciona ID e URL da foto
+                .select('id, url')
                 .eq('galeria_id', galeriaId)
-                .eq('status', 'aprovada') // Apenas fotos aprovadas podem ser capa
-                .order('id', { ascending: false }) // Ordena por ID em ordem decrescente
-                .limit(1) // Pega apenas a primeira (que será a de maior ID)
-                .single(); // Tenta retornar um único registro ou null
+                .eq('status', 'aprovada')
+                .order('id', { ascending: false })
+                .limit(1)
+                .single();
 
             if (error) {
-                if (error.code === 'PGRST116') { // No rows found
-                    return null; // Nenhuma foto encontrada ou aprovada
+                if (error.code === 'PGRST116') {
+                    return null;
                 }
                 console.error('Erro Supabase ao buscar última foto da galeria:', error.message);
                 throw new Error(`Erro ao buscar última foto da galeria: ${error.message}`);
             }
 
-            return data; // Retorna o objeto da foto (id, url) ou null
+            return data;
         } catch (error) {
             console.error('Erro na DAO ao buscar última foto da galeria:', error);
             throw new Error('Erro ao buscar última foto da galeria.');

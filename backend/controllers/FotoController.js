@@ -1,5 +1,3 @@
-// controllers/FotoController.js
-
 const FotoDAO = require('../dao/FotoDAO');
 const Foto = require('../models/Foto');
 const GaleriaDAO = require('../dao/GaleriaDAO');
@@ -32,13 +30,11 @@ class FotoController {
 
             const fotoCriada = await FotoDAO.criarFoto(novaFoto);
 
-            // NOVO: Lógica para definir a foto de capa automaticamente após o upload
-            if (fotoStatus === 'aprovada') { // Apenas fotos aprovadas podem ser capa
-                // Verifica se esta foto é a de maior ID para a galeria
+            if (fotoStatus === 'aprovada') {
                 const ultimaFotoAprovada = await GaleriaDAO.buscarUltimaFotoGaleria(galeria_id);
                 if (ultimaFotoAprovada && ultimaFotoAprovada.id === fotoCriada[0].id) {
                     await GaleriaDAO.atualizarFotoCapaGaleria(galeria_id, publicUrl);
-                } else if (!ultimaFotoAprovada) { // Se não havia nenhuma foto aprovada, esta é a primeira capa
+                } else if (!ultimaFotoAprovada) {
                     await GaleriaDAO.atualizarFotoCapaGaleria(galeria_id, publicUrl);
                 }
             }
@@ -58,7 +54,6 @@ class FotoController {
 
     static async listarFotos(req, res) {
         const { galeriaId } = req.params;
-        // NOVO: Pega o tipo de usuário do header ou query (melhor do header para autenticação)
         const tipoUsuario = req.headers['x-user-type'] || req.query.userType; 
 
         if (!galeriaId) {
@@ -66,7 +61,6 @@ class FotoController {
         }
 
         try {
-            // Passa o tipo de usuário para a DAO
             const fotos = await FotoDAO.listarFotosPorGaleria(galeriaId, tipoUsuario); 
             
             if (!fotos || fotos.length === 0) {
@@ -102,11 +96,9 @@ class FotoController {
                 return res.status(404).json({ message: 'Foto não encontrada ou status não pôde ser atualizado.' });
             }
 
-            // NOVO: Lógica para definir a foto de capa após a aprovação
             if (status === 'aprovada') {
-                const galeriaId = fotoAtualizada[0].galeria_id; // Pega o ID da galeria da foto atualizada
+                const galeriaId = fotoAtualizada[0].galeria_id; 
                 const ultimaFotoAprovada = await GaleriaDAO.buscarUltimaFotoGaleria(galeriaId);
-                // Se a foto aprovada é a de maior ID para aquela galeria, define ela como capa
                 if (ultimaFotoAprovada && ultimaFotoAprovada.id === fotoAtualizada[0].id) {
                     await GaleriaDAO.atualizarFotoCapaGaleria(galeriaId, fotoAtualizada[0].url);
                 }
@@ -121,8 +113,6 @@ class FotoController {
         }
     }
 
-    // --- Futuros Métodos Controller para Foto ---
-    // static async deletarFoto(req, res) { ... }
 }
 
 module.exports = FotoController;

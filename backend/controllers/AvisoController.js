@@ -6,7 +6,6 @@ class AvisoController{
         const { titulo, mensagem, autor, date, condominioId } = req.body;
     
         try {
-          // Chama a DAO para salvar o condomínio e as áreas comuns
           const aviso = new Aviso(null, titulo, mensagem, autor, date, condominioId);
           const avisoData = await AvisoDAO.createAviso(aviso);
           const avisoId = avisoData[0].id;

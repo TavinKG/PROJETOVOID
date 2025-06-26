@@ -6,12 +6,10 @@ class CondominioController {
     const { nome, cnpj, endereco, areasComuns } = req.body;
 
     try {
-      // Chama a DAO para salvar o condomínio e as áreas comuns
       const condominio = new Condominio(null, nome, cnpj, endereco);
       const condominioData = await CondominioDAO.createCondominio(condominio);
       const condominioId = condominioData[0].id;
       
-      // Salva as áreas comuns associadas ao condomínio
       await CondominioDAO.createAreasComuns(condominioId, areasComuns);
 
       res.status(201).json({ message: 'Condomínio criado com sucesso!', id: condominioId });
@@ -38,7 +36,7 @@ class CondominioController {
   }
 
   static async listarAreasComuns(req, res) {
-        const { condominioId } = req.params; // Pega o ID do condomínio dos parâmetros da URL
+        const { condominioId } = req.params;
 
         try {
             const areasComuns = await CondominioDAO.getAreasComunsByCondominioId(condominioId);

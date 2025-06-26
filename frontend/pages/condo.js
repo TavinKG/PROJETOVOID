@@ -1,4 +1,3 @@
-// pages/condo.js
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { useEffect, useState, useCallback } from 'react';
 import Cookies from 'js-cookie';
@@ -11,7 +10,7 @@ export default function Condo() {
     const router = useRouter();
     const userId = Cookies.get('userId');
     const [condominioID, setCondominioId] = useState(null);
-    const [condominioNome, setCondominioNome] = useState(''); // NOVO ESTADO: para armazenar o nome do condomínio
+    const [condominioNome, setCondominioNome] = useState('');
     const [condominiosPendentes, setCondominiosPendentes] = useState([]);
     const [tipoUsuario, setTipoUsuario] = useState(null);
     const [showNotificacoesModal, setNotificacoesModal] = useState(false);
@@ -35,15 +34,13 @@ export default function Condo() {
         }
     }, [condominioID]);
 
-    // NOVO: Função para buscar o nome do condomínio
     const fetchCondominioNome = useCallback(async () => {
         if (!condominioID) return;
         try {
-            // Supondo que você tem um endpoint /api/condominios/:id que retorna os detalhes do condomínio
             const response = await fetch(`http://localhost:5000/api/condominios/${condominioID}`);
             if (response.ok) {
                 const data = await response.json();
-                setCondominioNome(data.nome); // Assume que a API retorna um objeto com a propriedade 'nome'
+                setCondominioNome(data.nome);
             } else {
                 console.error('Erro ao buscar nome do condomínio:', response.statusText);
                 setCondominioNome('Condomínio Não Encontrado');
@@ -67,9 +64,9 @@ export default function Condo() {
     useEffect(() => {
         if (condominioID) {
             fetchCondominiosPendentes();
-            fetchCondominioNome(); // NOVO: Chama a função para buscar o nome
+            fetchCondominioNome();
         }
-    }, [condominioID, fetchCondominiosPendentes, fetchCondominioNome]); // Adiciona fetchCondominioNome às dependências
+    }, [condominioID, fetchCondominiosPendentes, fetchCondominioNome]);
 
     const alterarStatusVinculo = async (usuarioId, status) => {
         if (!confirm(`Tem certeza que deseja alterar o status do vínculo para ${status}?`)) {
@@ -104,27 +101,27 @@ export default function Condo() {
     return (
         <>
             <Head>
-                {/* NOVO: Título da página com o nome do condomínio */}
+                {}
                 <title>{condominioNome ? `${condominioNome} - Condomínio` : 'Página do Condomínio'}</title>
             </Head>
 
-            <nav className="navbar navbar-expand-lg shadow-sm" style={{height:'10vh'}}> {/* Usando bg-light, ajuste para sua cor padrão */}
+            <nav className="navbar navbar-expand-lg shadow-sm" style={{height:'10vh'}}> {}
                 <div className="container-fluid">
-                    {/* Logo na Esquerda */}
+                    {}
                     <a className="navbar-brand d-flex align-items-center" href="/home">
                         <Image 
-                            src="/logos/horizontal-escuro-cheio.png" // Ajuste o src para o caminho real da sua logo
+                            src="/logos/horizontal-escuro-cheio.png"
                             alt="VOID Logo" 
                             width={170} 
                             height={170} 
                             priority={true} 
-                            style={{marginLeft:'125px', objectFit: 'contain'}} // objectFit para ajustar imagem
+                            style={{marginLeft:'125px', objectFit: 'contain'}}
                         />
                     </a>
     
-                    {/* Botões alinhados à Direita */}
+                    {}
                     <div className="d-flex align-items-center" style={{marginRight:'125px'}}>
-                        {/* Botão de Notificações (visível apenas para Administrador) */}
+                        {}
                         {tipoUsuario === 'Administrador' && (
                             <button
                                 type="button"
@@ -136,7 +133,7 @@ export default function Condo() {
                             </button>
                         )}
 
-                        {/* Botão para Áreas Comuns */}
+                        {}
                         <button
                             type="button"
                             className="btn btn-info me-2"
@@ -146,7 +143,7 @@ export default function Condo() {
                             Áreas Comuns
                         </button>
 
-                        {/* Botão para Minhas Reservas (visível apenas para Morador) */}
+                        {}
                         {tipoUsuario === 'Morador' && (
                             <button
                                 type="button"
@@ -158,7 +155,7 @@ export default function Condo() {
                             </button>
                         )}
 
-                        {/* Botão para Gerenciar Reservas (visível apenas para Administrador) */}
+                        {}
                         {tipoUsuario === 'Administrador' && (
                             <button
                                 type="button"
@@ -170,7 +167,7 @@ export default function Condo() {
                             </button>
                         )}
 
-                        {/* Botão Assembleias */}
+                        {}
                         <button
                             type="button"
                             className="btn btn-info me-2"
@@ -180,27 +177,27 @@ export default function Condo() {
                             Assembleias
                         </button>
 
-                        {/* NOVO BOTÃO: Galeria de Fotos */}
+                        {}
                         <button
                             type="button"
-                            className="btn btn-info me-2" // Escolha uma cor apropriada
+                            className="btn btn-info me-2"
                             onClick={() => router.push(`/galeria?id=${condominioID}`)}
                             style={{color:'#fff', background:'none', border:'none'}}
                         >
                             Galeria de Fotos
                         </button>
 
-                        {/* NOVO BOTÃO: Eventos */}
+                        {}
                         <button
                             type="button"
-                            className="btn btn-info me-2" // Usando 'primary' para destaque, pode mudar
+                            className="btn btn-info me-2"
                             onClick={() => router.push(`/eventos?id=${condominioID}`)}
                             style={{color:'#fff', background:'none', border:'none'}}
                         >
                             Eventos
                         </button>
 
-                        {/* Botão de Avisos */}
+                        {}
                         <button
                             type="button"
                             className="btn btn-info me-5"
@@ -223,7 +220,7 @@ export default function Condo() {
             </nav>
 
             <div className="container mt-5">
-                {/* NOVO: Título principal da página com o nome do condomínio */}
+                {}
                 <h1 className="mb-4 text-center">
                     {condominioNome ? `Condomínio ${condominioNome}` : 'Condomínio'}
                 </h1>

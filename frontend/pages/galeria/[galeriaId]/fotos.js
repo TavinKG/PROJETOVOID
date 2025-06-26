@@ -1,9 +1,8 @@
-// pages/galeria/[galeriaId]/fotos.js
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { useEffect, useState, useCallback } from 'react';
 import Cookies from 'js-cookie';
 import { useRouter } from 'next/router';
-import LogoutButton from '../../../components/LogoutButton'; // Ajuste o caminho conforme a profundidade
+import LogoutButton from '../../../components/LogoutButton';
 import Head from 'next/head';
 import Image from 'next/image';
 
@@ -19,14 +18,12 @@ export default function FotosGaleria() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
-    // ESTADOS PARA O MODAL DE UPLOAD DE FOTO
     const [showUploadModal, setShowUploadModal] = useState(false);
     const [selectedFile, setSelectedFile] = useState(null);
     const [fileDescription, setFileDescription] = useState('');
     const [uploadLoading, setUploadLoading] = useState(false);
     const [uploadError, setUploadError] = useState(null);
 
-    // NOVOS ESTADOS PARA O MODAL DE VISUALIZAÇÃO DE IMAGEM COMPLETA
     const [showImageViewer, setShowImageViewer] = useState(false);
     const [currentImageUrl, setCurrentImageUrl] = useState('');
     const [currentImageDescription, setCurrentImageDescription] = useState('');
@@ -118,7 +115,6 @@ export default function FotosGaleria() {
     }, [galeriaId, condominioId, fetchGaleriaNome, fetchCondominioNome, fetchFotos]);
 
 
-    // Lógica para upload de foto
     const handleFileChange = (e) => {
         if (e.target.files && e.target.files[0]) {
             setSelectedFile(e.target.files[0]);
@@ -157,7 +153,7 @@ export default function FotosGaleria() {
                 setShowUploadModal(false);
                 setSelectedFile(null);
                 setFileDescription('');
-                fetchFotos(); // Recarrega a lista de fotos
+                fetchFotos();
             } else {
                 const errorData = await response.json();
                 console.error('Erro ao enviar foto:', errorData.message || response.statusText);
@@ -192,7 +188,7 @@ export default function FotosGaleria() {
 
             if (response.ok) {
                 alert(`Foto ${novoStatus === 'aprovada' ? 'aprovada' : 'rejeitada'} com sucesso!`);
-                fetchFotos(); // Recarrega a lista de fotos
+                fetchFotos();
             } else {
                 const errorData = await response.json();
                 console.error('Erro ao alterar status da foto:', errorData.message || response.statusText);
@@ -204,14 +200,12 @@ export default function FotosGaleria() {
         }
     };
 
-    // NOVO: Função para abrir o visualizador de imagem
     const openImageViewer = (imageUrl, imageDescription) => {
         setCurrentImageUrl(imageUrl);
         setCurrentImageDescription(imageDescription || 'Visualização da Imagem');
         setShowImageViewer(true);
     };
 
-    // NOVO: Função para fechar o visualizador de imagem
     const closeImageViewer = () => {
         setShowImageViewer(false);
         setCurrentImageUrl('');
@@ -224,21 +218,21 @@ export default function FotosGaleria() {
                 <title>{galeriaNome ? `${galeriaNome} - Fotos` : 'Fotos da Galeria'}</title>
             </Head>
 
-            <nav className="navbar navbar-expand-lg shadow-sm" style={{height:'10vh'}}> {/* Usando bg-light, ajuste para sua cor padrão */}
+            <nav className="navbar navbar-expand-lg shadow-sm" style={{height:'10vh'}}> {}
                 <div className="container-fluid">
-                    {/* Logo na Esquerda */}
+                    {}
                     <a className="navbar-brand d-flex align-items-center" href="/home">
                         <Image 
-                            src="/logos/horizontal-escuro-cheio.png" // Ajuste o src para o caminho real da sua logo
+                            src="/logos/horizontal-escuro-cheio.png"
                             alt="VOID Logo" 
                             width={170} 
                             height={170} 
                             priority={true} 
-                            style={{marginLeft:'125px', objectFit: 'contain'}} // objectFit para ajustar imagem
+                            style={{marginLeft:'125px', objectFit: 'contain'}}
                         />
                     </a>
     
-                    {/* Botões alinhados à Direita */}
+                    {}
                     <div className="d-flex align-items-center" style={{marginRight:'125px'}}>
                         <button
                             type="button"
@@ -276,7 +270,7 @@ export default function FotosGaleria() {
                     <p className="text-info mt-4">Nenhuma foto encontrada nesta galeria.</p>
                 )}
 
-                {/* Lista de Fotos */}
+                {}
                 {!loading && !error && fotos.length > 0 && (
                     <div className="row mt-4">
                         {fotos.map(foto => (
@@ -287,8 +281,8 @@ export default function FotosGaleria() {
                                             src={foto.url} 
                                             className="card-img-top rounded-4" 
                                             alt={foto.descricao || `Foto da galeria ${galeriaNome}`} 
-                                            style={{ height: '200px', objectFit: 'cover', cursor: 'pointer' }} // Adicionado cursor: pointer
-                                            onClick={() => openImageViewer(foto.url, foto.descricao)} // NOVO: Abre o visualizador ao clicar
+                                            style={{ height: '200px', objectFit: 'cover', cursor: 'pointer' }}
+                                            onClick={() => openImageViewer(foto.url, foto.descricao)}
                                         />
                                     )}
                                     <div className="card-body">
@@ -325,7 +319,7 @@ export default function FotosGaleria() {
                 )}
             </div>
 
-            {/* MODAL PARA UPLOAD DE FOTO */}
+            {}
             {showUploadModal && (tipoUsuario === 'Administrador' || tipoUsuario === 'Morador') && (
                 <div className="modal fade show d-block" tabIndex="-1" role="dialog" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
                     <div className="modal-dialog modal-dialog-centered" role="document">
@@ -373,10 +367,10 @@ export default function FotosGaleria() {
                 </div>
             )}
 
-            {/* NOVO MODAL: VISUALIZADOR DE IMAGEM COMPLETA */}
+            {}
             {showImageViewer && (
                 <div className="modal fade show d-block" tabIndex="-1" role="dialog" style={{ backgroundColor: 'rgba(0,0,0,0.8)' }}>
-                    <div className="modal-dialog modal-dialog-centered modal-xl" role="document"> {/* modal-xl para imagem grande */}
+                    <div className="modal-dialog modal-dialog-centered modal-xl" role="document"> {}
                         <div className="modal-content" style={{color:'rgb(3 7 18)'}}>
                             <div className="modal-header">
                                 <h5 className="modal-title">{currentImageDescription}</h5>
@@ -387,7 +381,7 @@ export default function FotosGaleria() {
                                     src={currentImageUrl} 
                                     alt={currentImageDescription} 
                                     className="img-fluid" 
-                                    style={{ maxHeight: '80vh', maxWidth: '100%', objectFit: 'contain' }} // Ajusta imagem ao modal
+                                    style={{ maxHeight: '80vh', maxWidth: '100%', objectFit: 'contain' }}
                                 />
                             </div>
                         </div>

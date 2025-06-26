@@ -1,5 +1,3 @@
-// controllers/ReservaController.js
-
 const ReservaDAO = require('../dao/ReservaDAO');
 const Reserva = require('../models/Reserva');
 
@@ -12,14 +10,12 @@ class ReservaController {
             return res.status(400).json({ message: 'Dados mínimos da reserva incompletos (areaId, usuarioId, dataInicio, dataFim, condominioId são obrigatórios).' });
         }
 
-        const statusInicial = '0'; // Status inicial como '0' (pendente)
+        const statusInicial = '0';
 
         try {
-            // --- NOVO: Lógica de Verificação de Conflito ---
             const conflitingReservas = await ReservaDAO.buscarReservasConflitantes(areaId, dataInicio, dataFim);
 
             if (conflitingReservas && conflitingReservas.length > 0) {
-                // Se encontrou alguma reserva pendente ou aprovada que se sobrepõe
                 return res.status(409).json({ message: 'Conflito de horário: Esta área já está reservada ou solicitada para o período selecionado.' });
             }
 
@@ -48,7 +44,6 @@ class ReservaController {
         }
     }
 
-    // Listar reservas de um usuário para um condomínio específico
     static async listarReservasDoUsuario(req, res) {
         const { userId, condominioId } = req.params;
 
@@ -69,12 +64,12 @@ class ReservaController {
 
     static async listarTodasReservas(req, res) {
         const { condominioId } = req.params;
-        const { areaId, status, date } = req.query; // NOVO: Pega os parâmetros de query
+        const { areaId, status, date } = req.query;
 
-        const filters = { areaId, status, date }; // Objeto de filtros
+        const filters = { areaId, status, date };
 
         try {
-            const reservas = await ReservaDAO.listarTodasReservasPorCondominio(condominioId, filters); // NOVO: Passa os filtros
+            const reservas = await ReservaDAO.listarTodasReservasPorCondominio(condominioId, filters);
             
             if (!reservas || reservas.length === 0) {
                 return res.status(200).json({ message: 'Nenhuma reserva encontrada para este condomínio com os filtros aplicados.', reservas: [] });
@@ -88,12 +83,11 @@ class ReservaController {
         }
     }
 
-    // NOVO MÉTODO: Alterar status de uma reserva
     static async alterarStatusReserva(req, res) {
         const { reservaId } = req.params;
-        const { status } = req.body; // Novo status (ex: '0', '1', '2', '5')
+        const { status } = req.body;
 
-        // Validação básica do status
+
         const statusPermitidos = ['0', '1', '2', '5'];
         if (!statusPermitidos.includes(status)) {
             return res.status(400).json({ message: 'Status inválido fornecido.' });
@@ -115,7 +109,7 @@ class ReservaController {
     }
 
     static async verificarDisponibilidade(req, res) {
-        const { areaId, date } = req.params; // Pega areaId e date da URL (date deve ser YYYY-MM-DD)
+        const { areaId, date } = req.params;
 
         if (!areaId || !date) {
             return res.status(400).json({ message: 'areaId e date são obrigatórios para verificar a disponibilidade.' });
@@ -129,32 +123,24 @@ class ReservaController {
             const endHour = 22;
             const interval = 3;
 
-            // Iterar sobre os horários potenciais
             for (let hour = startHour; hour < endHour; hour += interval) {
                 const formattedHour = String(hour).padStart(2, '0');
                 const slotTimeStr = `${formattedHour}:00`;
 
-                // Construir o objeto Date para o início e fim do SLOT
-                // É CRUCIAL USAR O MESMO FORMATO DE DATA (UTC ou LOCAL) QUE VOCÊ SALVA NO BANCO PARA COMPARAÇÃO
-                // Se você salva com toISOString() (que é UTC), compare com UTC.
-                const slotStart = new Date(`${date}T${slotTimeStr}:00.000Z`); // Início do slot
-                const slotEnd = new Date(slotStart.getTime() + interval * 60 * 60 * 1000); // Fim do slot (adiciona intervalo em ms)
+                const slotStart = new Date(`${date}T${slotTimeStr}:00.000Z`);
+                const slotEnd = new Date(slotStart.getTime() + interval * 60 * 60 * 1000);
 
                 let isAvailable = true;
 
-                // Verificar se este slot se sobrepõe a alguma reserva existente
                 for (const reserva of existingReservas) {
-                    const reservaStart = new Date(reserva.data_inicio); // Data de início da reserva existente
-                    const reservaEnd = new Date(reserva.data_fim);     // Data de fim da reserva existente
+                    const reservaStart = new Date(reserva.data_inicio); 
+                    const reservaEnd = new Date(reserva.data_fim);  
 
-                    // LÓGICA DE SOBREPOSIÇÃO ATUALIZADA E EXPLICITADA
-                    // Uma sobreposição ocorre se:
-                    // (Slot começa antes do fim da reserva EXISTENTE E Slot termina depois do início da reserva EXISTENTE)
                     if (
                         (slotStart.getTime() < reservaEnd.getTime() && slotEnd.getTime() > reservaStart.getTime())
                     ) {
-                        isAvailable = false; // O slot está ocupado
-                        break; // Se encontrou uma sobreposição, não precisa verificar mais
+                        isAvailable = false; 
+                        break;
                     }
                 }
                 allSlots.push({ time: slotTimeStr, isAvailable: isAvailable });

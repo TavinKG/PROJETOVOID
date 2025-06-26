@@ -1,4 +1,3 @@
-// pages/areas-comuns.js
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { useEffect, useState, useCallback } from 'react';
 import Cookies from 'js-cookie';
@@ -15,7 +14,7 @@ export default function AreasComuns() {
     const router = useRouter();
     const userId = Cookies.get('userId'); 
     const [condominioID, setCondominioId] = useState(null);
-    const [condominioNome, setCondominioNome] = useState(''); // Estado para o nome do condomínio
+    const [condominioNome, setCondominioNome] = useState('');
     const [areasComuns, setAreasComuns] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -46,7 +45,6 @@ export default function AreasComuns() {
         }
     }, [userId, router]);
 
-    // Função para buscar o nome do condomínio
     const fetchCondominioNome = useCallback(async () => {
         if (!condominioID) return;
         try {
@@ -56,7 +54,7 @@ export default function AreasComuns() {
                 setCondominioNome(data.nome);
             } else {
                 console.error('Erro ao buscar nome do condomínio:', response.statusText);
-                setCondominioNome('Condomínio Desconhecido'); // Fallback
+                setCondominioNome('Condomínio Desconhecido');
             }
         } catch (error) {
             console.error('Erro de rede ao buscar nome do condomínio:', error);
@@ -94,7 +92,7 @@ export default function AreasComuns() {
     useEffect(() => {
         if (condominioID) {
             fetchAreasComuns();
-            fetchCondominioNome(); // Chama a função para buscar o nome
+            fetchCondominioNome();
         }
     }, [condominioID, fetchAreasComuns, fetchCondominioNome]);
 
@@ -277,25 +275,25 @@ export default function AreasComuns() {
     return (
         <>
             <Head>
-                {/* Título da página com o nome do condomínio */}
+                {}
                 <title>{condominioNome ? `${condominioNome} - Áreas Comuns` : 'Áreas Comuns - Condomínio'}</title>
             </Head>
 
-            <nav className="navbar navbar-expand-lg shadow-sm" style={{height:'10vh'}}> {/* Usando bg-light, ajuste para sua cor padrão */}
+            <nav className="navbar navbar-expand-lg shadow-sm" style={{height:'10vh'}}> {}
                 <div className="container-fluid">
-                    {/* Logo na Esquerda */}
+                    {}
                     <a className="navbar-brand d-flex align-items-center" href="/home">
                         <Image 
-                            src="/logos/horizontal-escuro-cheio.png" // Ajuste o src para o caminho real da sua logo
+                            src="/logos/horizontal-escuro-cheio.png"
                             alt="VOID Logo" 
                             width={170} 
                             height={170} 
                             priority={true} 
-                            style={{marginLeft:'125px', objectFit: 'contain'}} // objectFit para ajustar imagem
+                            style={{marginLeft:'125px', objectFit: 'contain'}}
                         />
                     </a>
     
-                    {/* Botões alinhados à Direita */}
+                    {}
                     <div className="d-flex align-items-center" style={{marginRight:'125px'}}>
                         <button
                         type="button"
@@ -310,10 +308,10 @@ export default function AreasComuns() {
             </nav>
 
             <div className="container mt-5">
-                {/* Título principal da página com o nome do condomínio */}
+                {}
                 <h1 className="mb-4">
                     {condominioNome ? `Áreas Comuns do Condomínio ${condominioNome}` : 'Áreas Comuns do Condomínio'}
-                    {/* Removido ` (ID: ${condominioID})` */}
+                    {}
                 </h1>
 
                 {loading && <p className="text-info mt-4">Carregando áreas comuns...</p>}
@@ -352,7 +350,7 @@ export default function AreasComuns() {
                 )}
             </div>
 
-            {/* MODAL DE RESERVA DE ÁREA COMUM (Seleção de Data/Hora) */}
+            {}
             {showReservaModal && selectedArea && (
                 <div className="modal fade show d-block" tabIndex="-1" role="dialog" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
                     <div className="modal-dialog modal-dialog-centered" role="document">
@@ -362,16 +360,16 @@ export default function AreasComuns() {
                                 <button type="button" className="btn-close" aria-label="Close" onClick={closeReservaModal}></button>
                             </div>
                             <div className="modal-body">
-                                {/* CALENDÁRIO */}
+                                {}
                                 <div className="d-flex justify-content-center mb-3">
                                     <Calendar
                                         onChange={onCalendarChange}
                                         value={selectedDate}
-                                        minDate={new Date()} // Desabilita datas passadas
-                                        minDetail="month" // Não permite ir para visualização de ano/década
-                                        maxDetail="month" // Não permite ir para visualização de ano/década
-                                        tileDisabled={tileDisabled} // Desabilita dias de semana
-                                        locale="pt-BR" // Define o idioma para Português
+                                        minDate={new Date()}
+                                        minDetail="month"
+                                        maxDetail="month"
+                                        tileDisabled={tileDisabled}
+                                        locale="pt-BR"
                                     />
                                 </div>
 
@@ -397,7 +395,7 @@ export default function AreasComuns() {
                                     }
                                 `}</style>
 
-                                {/* HORÁRIOS DISPONÍVEIS/INDISPONÍVEIS */}
+                                {}
                                 <h6 className="text-center mb-3">
                                     Horários disponíveis para {' '}
                                     {selectedDate.toLocaleDateString('pt-BR', {day: '2-digit', month: '2-digit', year: 'numeric'})}
@@ -436,7 +434,7 @@ export default function AreasComuns() {
                 </div>
             )}
 
-            {/* MODAL DE CONFIRMAÇÃO DE RESERVA (Formulário) */}
+            {}
             {showConfirmacaoModal && selectedArea && selectedDate && selectedSlot && (
                 <div className="modal fade show d-block" tabIndex="-1" role="dialog" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
                     <div className="modal-dialog modal-dialog-centered" role="document">

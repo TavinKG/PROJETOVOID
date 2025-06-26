@@ -1,5 +1,5 @@
-const Morador = require('../models/Morador'); // Importa a classe Morador
-const Administrador = require('../models/Administrador'); // Importa a classe Administrador
+const Morador = require('../models/Morador');
+const Administrador = require('../models/Administrador');
 const MoradorDAO = require('../dao/MoradorDAO');
 const AdministradorDAO = require('../dao/AdministradorDAO');
 const UsuarioDAO = require('../dao/UsuarioDAO');

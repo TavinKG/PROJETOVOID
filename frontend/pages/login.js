@@ -2,8 +2,8 @@ import { useRouter } from 'next/router';
 import { useState } from 'react';
 import Cookies from 'js-cookie';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import Head from 'next/head'; // Importar Head para SEO e título da página
-import Link from 'next/link'; // Importar Link do Next.js para navegação otimizada
+import Head from 'next/head';
+import Link from 'next/link';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -37,9 +37,8 @@ export default function Login() {
         Cookies.set('userId', data.id);
 
         console.log('Usuário logado com sucesso:', data);
-        router.push('/home'); // Redireciona para a home
+        router.push('/home');
       } else {
-        // Assume data.message for more specific errors from backend
         setError(data.message || data.error || 'Erro ao fazer login. Verifique suas credenciais.');
       }
     } catch (err) {
@@ -56,7 +55,7 @@ export default function Login() {
         <title>Login - PROJETO VOID</title>
       </Head>
       <div className="d-flex flex-column align-items-center justify-content-center min-vh-100">
-        <div className="card shadow p-4 w-100 rounded-4" style={{ maxWidth: '450px', backgroundColor: 'rgb(31 41 55)', color: '#fff'}}> {/* Levemente reduzido o maxWidth para um card de login mais focado */}
+        <div className="card shadow p-4 w-100 rounded-4" style={{ maxWidth: '450px', backgroundColor: 'rgb(31 41 55)', color: '#fff'}}> {}
           <div className="text-center mb-4">
             <img src="/logos/icone-escuro.png" alt="VOID Logo" className="mb-3" style={{ height: '100px' }} />
             <h2 className="mb-0">Login</h2>
@@ -92,11 +91,11 @@ export default function Login() {
               disabled={loading}
               style={{color: 'rgb(31 41 55)', fontWeight: 'bold'}}
             >
-              {loading ? 'Entrando...' : 'Entrar'} {/* Alterado texto de loading */}
+              {loading ? 'Entrando...' : 'Entrar'} {}
             </button>
             {error && <p className="text-danger text-center mt-3">{error}</p>}
 
-            {/* Novo elemento: Link para a página de Cadastro */}
+            {}
             <p className="text-center mt-3 mb-0">
               Não tem uma conta?{' '}
               <Link href="/signup" className="text-decoration-none" style={{color: '#4fc1e9'}}>

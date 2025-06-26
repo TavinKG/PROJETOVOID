@@ -29,7 +29,6 @@ export default function Signup() {
     setLoading(true);
     setError(null);
 
-    // Validações aprimoradas no frontend, usando os valores LIMPOS
     if (formData.cpf.length !== 11) {
       setError('CPF inválido. Deve conter 11 dígitos.');
       setLoading(false);
@@ -89,27 +88,22 @@ export default function Signup() {
         console.log('Usuário cadastrado com sucesso:', data);
         router.push('/login');
       } else {
-        // --- INÍCIO DA CORREÇÃO ---
-        let errorMessage = 'Erro ao registrar usuário. Tente novamente.'; // Mensagem genérica padrão
+        let errorMessage = 'Erro ao registrar usuário. Tente novamente.'; 
         if (data.error && typeof data.error === 'string') {
-          // Verifica se o erro do backend é uma string e tenta mapear
           if (data.error.includes('duplicate key value violates unique constraint "usuario_cpf_key"')) {
             errorMessage = 'Este CPF já está cadastrado. Por favor, utilize outro ou faça login.';
           } else if (data.error.includes('duplicate key value violates unique constraint "usuario_email_key"')) { // Adicionei para o caso de e-mail
             errorMessage = 'Este e-mail já está cadastrado. Por favor, utilize outro ou faça login.';
           } else {
-            // Se for outro erro do backend que não mapeamos, exibe a mensagem original ou uma mais geral
             errorMessage = data.error; 
           }
         } else if (data.message) {
-            // Se o backend enviar uma mensagem mais amigável via 'message'
             errorMessage = data.message;
         }
         setError(errorMessage);
-        // --- FIM DA CORREÇÃO ---
       }
     } catch (err) {
-      setError('Erro na comunicação com o servidor. Verifique sua conexão.'); // Mensagem mais específica para erro de rede
+      setError('Erro na comunicação com o servidor. Verifique sua conexão.');
       console.error('Signup error:', err);
     } finally {
       setLoading(false);
