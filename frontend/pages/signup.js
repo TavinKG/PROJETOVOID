@@ -228,6 +228,11 @@ export default function Signup() {
                   required
                 />
               </div>
+              <style jsx global>{`
+                  input[type="date"]::-webkit-calendar-picker-indicator {
+                      filter: invert(1); /* deixa o ícone branco */
+                  }
+              `}</style>
               <div className="col-md-6 mb-3">
                 <label htmlFor="senha" className="form-label">Senha</label>
                 <input
