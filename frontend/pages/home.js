@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import Cookies from 'js-cookie';
 import { useRouter } from 'next/router';
 import LogoutButton from '../components/LogoutButton';
+import InputMask from 'react-input-mask';
 
 export default function Home() {
   const router = useRouter();
@@ -16,6 +17,7 @@ export default function Home() {
   const [cnpjSearch, setCnpjSearch] = useState('');
   const [condominioEncontrado, setCondominioEncontrado] = useState(null);
   const [condominiosUsuario, setCondominiosUsuario] = useState([]);
+  const [condominioCnpjCadastro, setCondominioCnpjCadastro] = useState('');
 
   useEffect(() => {
     if (!tipoUsuario || !userId) {
@@ -135,9 +137,15 @@ export default function Home() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    const rawCnpj = condominioCnpjCadastro.replace(/\D/g, ''); // Remove caracteres não numéricos
+    if (rawCnpj.length !== 14) { // CNPJ tem 14 dígitos
+      alert('Por favor, digite um CNPJ válido com 14 dígitos.');
+      return;
+    }
+
     const condominioData = {
       nome: e.target.nome.value,
-      cnpj: e.target.cnpj.value,
+      cnpj: rawCnpj,
       endereco: e.target.endereco.value,
       areasComuns: areasComuns.map(area => ({
         nome: area.nome,
@@ -185,6 +193,18 @@ export default function Home() {
     }
   };
 
+  const formatCnpj = (cnpj) => {
+    if (!cnpj) return '';
+    // Remove caracteres não numéricos
+    const rawCnpj = cnpj.replace(/\D/g, '');
+    // Aplica a máscara
+    if (rawCnpj.length <= 2) return rawCnpj;
+    if (rawCnpj.length <= 5) return `${rawCnpj.slice(0, 2)}.${rawCnpj.slice(2)}`;
+    if (rawCnpj.length <= 8) return `${rawCnpj.slice(0, 2)}.${rawCnpj.slice(2, 5)}.${rawCnpj.slice(5)}`;
+    if (rawCnpj.length <= 12) return `${rawCnpj.slice(0, 2)}.${rawCnpj.slice(2, 5)}.${rawCnpj.slice(5, 8)}/${rawCnpj.slice(8)}`;
+    return `${rawCnpj.slice(0, 2)}.${rawCnpj.slice(2, 5)}.${rawCnpj.slice(5, 8)}/${rawCnpj.slice(8, 12)}-${rawCnpj.slice(12, 14)}`;
+  };
+
   return (
     <div className="container mt-5">
     {/* Backdrop escuro para modal */}
@@ -215,7 +235,7 @@ export default function Home() {
               <div className="card mb-3 rounded-4" style={{backgroundColor: 'rgb(3 7 18)', color: '#fff', border: '2px solid #4fc1e9'}}>
                 <div className="card-body">
                   <h5 className="card-title">{condominio.nome}</h5>
-                  <p className="card-text"><strong>CNPJ:</strong> {condominio.cnpj}</p>
+                  <p className="card-text"><strong>CNPJ:</strong> {formatCnpj(condominio.cnpj)}</p>
                   <p className="card-text"><strong>Endereço:</strong> {condominio.endereco}</p>
                 </div>
               </div>
@@ -232,7 +252,7 @@ export default function Home() {
       {showIngressoModal && (
         <div className="modal fade show d-block" tabIndex="-1" role="dialog" aria-labelledby="modalIngressoCondominio" aria-hidden="true">
           <div className="modal-dialog modal-dialog-centered" role="document" >
-            <div className="modal-content" style={{ backgroundColor: '#fff', color: 'rgb(3 7 18)', fontWeight: 'bold' }}>
+            <div className="modal-content" style={{ backgroundColor: '#fff', color: 'rgb(3 7 18)' }}>
               <div className="modal-header">
                 <h5 className="modal-title" id="modalIngressoCondominio">Buscar ou Ingressar em um Condomínio</h5>
                 <button type="button" className="btn-close" aria-label="Close" onClick={() => setShowIngressoModal(false)}></button>
@@ -259,7 +279,7 @@ export default function Home() {
                   <div className="mt-3">
                     <h5>Condomínio Encontrado:</h5>
                     <p><strong>Nome:</strong> {condominioEncontrado.nome}</p>
-                    <p><strong>CNPJ:</strong> {condominioEncontrado.cnpj}</p>
+                    <p><strong>CNPJ:</strong> {formatCnpj(condominioEncontrado.cnpj)}</p>
                     <p><strong>Endereço:</strong> {condominioEncontrado.endereco}</p>
                     <button className="btn btn-info rounded-pill" onClick={handleIngressarCondominio} style={{fontWeight: 'bold'}}>Ingressar</button>
                   </div>
@@ -287,7 +307,15 @@ export default function Home() {
                   </div>
                   <div className="mb-3">
                     <label htmlFor="cnpj" className="form-label">CNPJ</label>
-                    <input type="text" id="cnpj" className="form-control" required />
+                    <InputMask // Componente que aplica a máscara
+                      type="text"
+                      id="cnpj"
+                      className="form-control"
+                      mask="99.999.999/9999-99" // <- A MÁSCARA ESTÁ AQUI
+                      value={condominioCnpjCadastro}
+                      onChange={(e) => setCondominioCnpjCadastro(e.target.value)}
+                      required
+                    />
                   </div>
                   <div className="mb-3">
                     <label htmlFor="endereco" className="form-label">Endereço</label>
