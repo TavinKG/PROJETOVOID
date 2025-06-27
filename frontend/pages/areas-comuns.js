@@ -187,13 +187,26 @@ export default function AreasComuns() {
 
     const handleConfirmarReservaClick = () => {
         if (selectedSlot && selectedDate) {
-            const [hours, minutes] = selectedSlot.time.split(':').map(Number);
-            const endDate = new Date(selectedDate);
-            endDate.setUTCHours(hours + 3, minutes, 0, 0); 
-
-            setReservationEndTime(endDate.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }));
+            const [startHours, startMinutes] = selectedSlot.time.split(':').map(Number);
             
-            setShowReservaModal(false);
+            // Cria um objeto Date para o início do slot (em UTC)
+            const startDateObj = new Date(selectedDate);
+            startDateObj.setUTCHours(startHours, startMinutes, 0, 0);
+
+            // Cria um objeto Date para o FIM do slot (3 horas depois, em UTC)
+            const endDateObj = new Date(selectedDate);
+            endDateObj.setUTCHours(startHours + 3, startMinutes, 0, 0); 
+
+            // Formata a hora de fim para exibição, também em UTC (HH:MM)
+            const formattedEndTime = endDateObj.toLocaleTimeString('pt-BR', { // Esta é a formatação do FIM
+                hour: '2-digit', 
+                minute: '2-digit', 
+                hour12: false, 
+                timeZone: 'UTC' 
+            });
+            setReservationEndTime(formattedEndTime); // Define o estado com a hora de fim formatada
+            
+            setShowReservaModal(false); // Esconde o modal de seleção de data/hora
             setShowConfirmacaoModal(true);
         }
     };
